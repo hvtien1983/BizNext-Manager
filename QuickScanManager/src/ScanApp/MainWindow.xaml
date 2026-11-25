@@ -13,7 +13,8 @@
         Background="{StaticResource SurfaceCanvasBrush}"
         FontFamily="Segoe UI"
         Foreground="{StaticResource TextPrimaryBrush}"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen" 
+        Icon="Assets/app-icon.ico">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="76" />
