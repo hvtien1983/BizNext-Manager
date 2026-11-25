@@ -10,7 +10,8 @@
         WindowStartupLocation="CenterOwner"
         Background="{StaticResource SurfaceCanvasBrush}"
         FontFamily="Segoe UI"
-        Foreground="{StaticResource TextPrimaryBrush}">
+        Foreground="{StaticResource TextPrimaryBrush}" 
+        Icon="Assets/icon.ico">
     <Window.Resources>
         <Style x:Key="DialogLabel" TargetType="TextBlock">
             <Setter Property="FontSize" Value="{StaticResource CompactLabelFontSize}" />

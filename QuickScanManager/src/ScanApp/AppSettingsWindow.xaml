@@ -10,7 +10,8 @@
         WindowStartupLocation="CenterOwner"
         Background="{StaticResource SurfaceCanvasBrush}"
         FontFamily="Segoe UI"
-        Foreground="{StaticResource TextPrimaryBrush}">
+        Foreground="{StaticResource TextPrimaryBrush}" 
+        Icon="Assets/icon.ico">
     <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
