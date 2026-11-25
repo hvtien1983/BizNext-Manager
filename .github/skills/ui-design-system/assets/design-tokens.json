@@ -1,0 +1,109 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "name": "BizNext UI",
+  "version": "1.0.0",
+  "color": {
+    "palette": {
+      "blue.600": "#356AE6",
+      "blue.050": "#EAF0FF",
+      "slate.950": "#172033",
+      "slate.700": "#536078",
+      "slate.500": "#748099",
+      "slate.200": "#E5E9F0",
+      "slate.100": "#F5F7FA",
+      "white": "#FFFFFF",
+      "green.600": "#278354",
+      "green.100": "#F0F7F2",
+      "red.600": "#C44747"
+    },
+    "action": {
+      "primary": "{color.palette.blue.600}",
+      "primarySubtle": "{color.palette.blue.050}",
+      "danger": "{color.palette.red.600}"
+    },
+    "surface": {
+      "canvas": "{color.palette.slate.100}",
+      "default": "{color.palette.white}",
+      "subtle": "#F8FAFD",
+      "raised": "{color.palette.white}",
+      "success": "{color.palette.green.100}"
+    },
+    "text": {
+      "primary": "{color.palette.slate.950}",
+      "secondary": "{color.palette.slate.700}",
+      "muted": "{color.palette.slate.500}",
+      "onPrimary": "{color.palette.white}",
+      "success": "{color.palette.green.600}",
+      "danger": "{color.palette.red.600}"
+    },
+    "border": {
+      "default": "{color.palette.slate.200}",
+      "subtle": "#EEF0F4",
+      "focus": "{color.palette.blue.600}"
+    }
+  },
+  "typography": {
+    "fontFamily": {
+      "default": ["Segoe UI", "Arial", "sans-serif"]
+    },
+    "size": {
+      "caption": "10px",
+      "small": "11px",
+      "body": "12px",
+      "bodyLarge": "14px",
+      "title": "22px"
+    },
+    "weight": {
+      "regular": 400,
+      "semibold": 600,
+      "bold": 700
+    },
+    "role": {
+      "caption": {
+        "fontSize": "{typography.size.caption}",
+        "fontWeight": "{typography.weight.regular}"
+      },
+      "body": {
+        "fontSize": "{typography.size.body}",
+        "fontWeight": "{typography.weight.regular}"
+      },
+      "label": {
+        "fontSize": "{typography.size.small}",
+        "fontWeight": "{typography.weight.semibold}"
+      },
+      "heading": {
+        "fontSize": "{typography.size.title}",
+        "fontWeight": "{typography.weight.bold}"
+      }
+    }
+  },
+  "spacing": {
+    "0": "0px",
+    "1": "4px",
+    "2": "8px",
+    "3": "12px",
+    "4": "16px",
+    "5": "20px",
+    "6": "24px",
+    "8": "32px",
+    "10": "40px",
+    "12": "48px"
+  },
+  "shape": {
+    "radius": {
+      "small": "5px",
+      "control": "8px",
+      "card": "12px",
+      "pill": "999px"
+    },
+    "borderWidth": {
+      "default": "1px",
+      "emphasis": "2px"
+    }
+  },
+  "elevation": {
+    "card": {
+      "description": "Subtle separation from the canvas; prefer a border before a visible shadow."
+    }
+  }
+}

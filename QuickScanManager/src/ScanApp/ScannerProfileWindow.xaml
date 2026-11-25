@@ -1,0 +1,114 @@
+<Window x:Class="ScanApp.ScannerProfileWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Cấu hình máy scan"
+        Width="440"
+        Height="510"
+        MinWidth="420"
+        MinHeight="480"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Background="#F5F7FA"
+        FontFamily="Segoe UI"
+        Foreground="#172033">
+    <Window.Resources>
+        <Style x:Key="DialogLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="#536078" />
+            <Setter Property="Margin" Value="0,0,0,7" />
+        </Style>
+        <Style x:Key="DialogComboBox" TargetType="ComboBox">
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Padding" Value="10,7" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#E5E9F0" />
+        </Style>
+        <Style x:Key="DialogButton" TargetType="Button">
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Padding" Value="16,0" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <StackPanel>
+            <TextBlock Text="Bí danh &amp; mặc định"
+                       FontSize="19"
+                       FontWeight="Bold" />
+            <TextBlock x:Name="DeviceNameText"
+                       Margin="0,5,0,0"
+                       FontSize="11"
+                       Foreground="#748099"
+                       TextWrapping="Wrap" />
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Margin="0,22,0,0">
+            <TextBlock Text="TÊN GỢI NHỚ" Style="{StaticResource DialogLabel}" />
+            <TextBox x:Name="AliasTextBox"
+                     Height="40"
+                     Padding="10,0"
+                     VerticalContentAlignment="Center"
+                     FontSize="12"
+                     BorderBrush="#E5E9F0"
+                     ToolTip="Ví dụ: Máy scan phòng kế toán" />
+
+            <TextBlock Text="CHẾ ĐỘ MÀU"
+                       Style="{StaticResource DialogLabel}"
+                       Margin="0,18,0,7" />
+            <ComboBox x:Name="ColorModeComboBox" Style="{StaticResource DialogComboBox}">
+                <ComboBoxItem Content="Color" Tag="Color" />
+                <ComboBoxItem Content="Grayscale" Tag="Grayscale" />
+                <ComboBoxItem Content="BlackWhite" Tag="BlackWhite" />
+            </ComboBox>
+
+            <TextBlock Text="ĐỘ PHÂN GIẢI"
+                       Style="{StaticResource DialogLabel}"
+                       Margin="0,18,0,7" />
+            <ComboBox x:Name="ResolutionComboBox" Style="{StaticResource DialogComboBox}">
+                <ComboBoxItem Content="150 DPI" Tag="150" />
+                <ComboBoxItem Content="200 DPI" Tag="200" />
+                <ComboBoxItem Content="300 DPI" Tag="300" />
+            </ComboBox>
+
+            <TextBlock Text="NGUỒN NẠP"
+                       Style="{StaticResource DialogLabel}"
+                       Margin="0,18,0,7" />
+            <ComboBox x:Name="SourceComboBox" Style="{StaticResource DialogComboBox}">
+                <ComboBoxItem Content="Mặt kính" Tag="Flatbed" />
+                <ComboBoxItem Content="Khay nạp ADF" Tag="Feeder" />
+            </ComboBox>
+            <TextBlock Text="Bí danh chỉ lưu trong ứng dụng, không thay đổi tên thiết bị trong Windows."
+                       Margin="0,13,0,0"
+                       FontSize="10"
+                       Foreground="#748099"
+                       TextWrapping="Wrap" />
+        </StackPanel>
+
+        <StackPanel Grid.Row="2"
+                    Margin="0,18,0,0"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+            <Button Content="Hủy"
+                    IsCancel="True"
+                    Style="{StaticResource DialogButton}"
+                    Margin="0,0,8,0"
+                    Background="White"
+                    BorderBrush="#E5E9F0" />
+            <Button Content="Lưu bí danh"
+                    IsDefault="True"
+                    Click="Save_Click"
+                    Style="{StaticResource DialogButton}"
+                    Background="#356AE6"
+                    Foreground="White"
+                    BorderThickness="0" />
+        </StackPanel>
+    </Grid>
+</Window>
