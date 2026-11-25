@@ -2,10 +2,10 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Cấu hình máy scan"
-        Width="440"
-        Height="510"
-        MinWidth="420"
-        MinHeight="480"
+        Width="420"
+        Height="470"
+        MinWidth="400"
+        MinHeight="450"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner"
         Background="{StaticResource SurfaceCanvasBrush}"
@@ -13,30 +13,65 @@
         Foreground="{StaticResource TextPrimaryBrush}">
     <Window.Resources>
         <Style x:Key="DialogLabel" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontSize" Value="{StaticResource CompactLabelFontSize}" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
-            <Setter Property="Margin" Value="0,0,0,7" />
+            <Setter Property="Margin" Value="0,0,0,5" />
         </Style>
         <Style x:Key="DialogComboBox" TargetType="ComboBox">
-            <Setter Property="Height" Value="40" />
-            <Setter Property="Padding" Value="10,7" />
-            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Height" Value="{StaticResource CompactControlHeight}" />
+            <Setter Property="Padding" Value="9,5" />
+            <Setter Property="FontSize" Value="{StaticResource CompactControlFontSize}" />
             <Setter Property="Background" Value="{StaticResource SurfaceDefaultBrush}" />
             <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}" />
+            <Style.Triggers>
+                <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                    <Setter Property="BorderBrush" Value="{StaticResource BorderFocusBrush}" />
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.55" />
+                </Trigger>
+            </Style.Triggers>
         </Style>
         <Style x:Key="DialogTextBox" TargetType="TextBox">
-            <Setter Property="Height" Value="40" />
-            <Setter Property="Padding" Value="10,0" />
+            <Setter Property="Height" Value="{StaticResource CompactControlHeight}" />
+            <Setter Property="Padding" Value="9,0" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontSize" Value="{StaticResource CompactControlFontSize}" />
             <Setter Property="Background" Value="{StaticResource SurfaceDefaultBrush}" />
             <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}" />
             <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="InputBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{StaticResource ControlCornerRadius}">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="InputBorder"
+                                        Property="BorderBrush"
+                                        Value="{StaticResource BorderFocusBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="InputBorder" Property="Opacity" Value="0.55" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
         <Style x:Key="DialogButton" TargetType="Button">
-            <Setter Property="Height" Value="40" />
-            <Setter Property="Padding" Value="16,0" />
+            <Setter Property="Height" Value="{StaticResource CompactPrimaryButtonHeight}" />
+            <Setter Property="Padding" Value="14,0" />
+            <Setter Property="FontSize" Value="{StaticResource CompactControlFontSize}" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -57,7 +92,7 @@
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="DialogButtonBorder"
                                         Property="BorderBrush"
-                                        Value="{StaticResource BorderFocusBrush}" />
+                                        Value="{StaticResource BorderDefaultBrush}" />
                             </Trigger>
                             <Trigger Property="IsKeyboardFocused" Value="True">
                                 <Setter TargetName="DialogButtonBorder"
@@ -74,7 +109,7 @@
         </Style>
     </Window.Resources>
 
-    <Grid Margin="24">
+    <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -82,16 +117,16 @@
         </Grid.RowDefinitions>
         <StackPanel>
             <TextBlock Text="Bí danh &amp; mặc định"
-                       FontSize="19"
+                       FontSize="18"
                        FontWeight="Bold" />
             <TextBlock x:Name="DeviceNameText"
-                       Margin="0,5,0,0"
-                       FontSize="11"
+                       Margin="0,4,0,0"
+                       FontSize="{StaticResource CompactLabelFontSize}"
                        Foreground="{StaticResource TextMutedBrush}"
                        TextWrapping="Wrap" />
         </StackPanel>
 
-        <StackPanel Grid.Row="1" Margin="0,22,0,0">
+        <StackPanel Grid.Row="1" Margin="0,16,0,0">
             <TextBlock Text="TÊN GỢI NHỚ" Style="{StaticResource DialogLabel}" />
             <TextBox x:Name="AliasTextBox"
                      Style="{StaticResource DialogTextBox}"
@@ -99,7 +134,7 @@
 
             <TextBlock Text="CHẾ ĐỘ MÀU"
                        Style="{StaticResource DialogLabel}"
-                       Margin="0,18,0,7" />
+                       Margin="0,12,0,5" />
             <ComboBox x:Name="ColorModeComboBox" Style="{StaticResource DialogComboBox}">
                 <ComboBoxItem Content="Color" Tag="Color" />
                 <ComboBoxItem Content="Grayscale" Tag="Grayscale" />
@@ -108,7 +143,7 @@
 
             <TextBlock Text="ĐỘ PHÂN GIẢI"
                        Style="{StaticResource DialogLabel}"
-                       Margin="0,18,0,7" />
+                       Margin="0,12,0,5" />
             <ComboBox x:Name="ResolutionComboBox" Style="{StaticResource DialogComboBox}">
                 <ComboBoxItem Content="150 DPI" Tag="150" />
                 <ComboBoxItem Content="200 DPI" Tag="200" />
@@ -117,27 +152,27 @@
 
             <TextBlock Text="NGUỒN NẠP"
                        Style="{StaticResource DialogLabel}"
-                       Margin="0,18,0,7" />
+                       Margin="0,12,0,5" />
             <ComboBox x:Name="SourceComboBox" Style="{StaticResource DialogComboBox}">
                 <ComboBoxItem Content="Mặt kính" Tag="Flatbed" />
                 <ComboBoxItem Content="Khay nạp ADF" Tag="Feeder" />
             </ComboBox>
             <TextBlock Text="Bí danh chỉ lưu trong ứng dụng, không thay đổi tên thiết bị trong Windows."
-                       Margin="0,13,0,0"
-                       FontSize="10"
+                       Margin="0,10,0,0"
+                       FontSize="{StaticResource CompactCaptionFontSize}"
                        Foreground="{StaticResource TextMutedBrush}"
                        TextWrapping="Wrap" />
         </StackPanel>
 
         <StackPanel Grid.Row="2"
-                    Margin="0,18,0,0"
+                    Margin="0,12,0,0"
                     Orientation="Horizontal"
                     HorizontalAlignment="Right">
             <Button Content="Hủy"
                     IsCancel="True"
                     Style="{StaticResource DialogButton}"
                     Margin="0,0,8,0"
-                    Background="White"
+                    Background="{StaticResource SurfaceDefaultBrush}"
                     BorderBrush="{StaticResource BorderDefaultBrush}" />
             <Button Content="Lưu bí danh"
                     IsDefault="True"

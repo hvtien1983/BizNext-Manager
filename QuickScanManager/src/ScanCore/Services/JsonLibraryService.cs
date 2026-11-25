@@ -32,17 +32,40 @@ public sealed class JsonLibraryService(string libraryPath)
     {
         ArgumentNullException.ThrowIfNull(documents);
 
-        var directory = Path.GetDirectoryName(Path.GetFullPath(libraryPath));
-        if (directory is not null)
-        {
-            Directory.CreateDirectory(directory);
-        }
+        var fullPath = Path.GetFullPath(libraryPath);
+        var directory = Path.GetDirectoryName(fullPath)
+            ?? throw new ArgumentException("The library path must include a directory.", nameof(libraryPath));
+        Directory.CreateDirectory(directory);
 
-        await using var stream = File.Create(libraryPath);
-        await JsonSerializer.SerializeAsync(
-            stream,
-            documents,
-            JsonOptions,
-            cancellationToken);
+        var temporaryPath = Path.Combine(
+            directory,
+            $".{Path.GetFileName(fullPath)}.{Guid.NewGuid():N}.tmp");
+        try
+        {
+            await using (var stream = new FileStream(
+                             temporaryPath,
+                             FileMode.CreateNew,
+                             FileAccess.Write,
+                             FileShare.None,
+                             bufferSize: 4096,
+                             useAsync: true))
+            {
+                await JsonSerializer.SerializeAsync(
+                    stream,
+                    documents,
+                    JsonOptions,
+                    cancellationToken);
+                await stream.FlushAsync(cancellationToken);
+            }
+
+            File.Move(temporaryPath, fullPath, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+            {
+                File.Delete(temporaryPath);
+            }
+        }
     }
 }

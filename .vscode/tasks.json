@@ -1,0 +1,26 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build QuickScanManager",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}\\QuickScanManager\\QuickScanManager.sln",
+        "--configuration",
+        "Debug",
+        "--verbosity",
+        "minimal"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}\\QuickScanManager"
+      },
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}

@@ -2,9 +2,15 @@ using System.IO;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Windows.Media.Imaging;
 using ScanApp.Commands;
+using ScanApp.Models;
+using ScanApp.Services;
+using ScanCore.Models;
+using ScanCore.Services;
 using ScanDevice.Models;
 using ScanDevice.Services;
 
@@ -12,30 +18,64 @@ namespace ScanApp.ViewModels;
 
 public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
 {
+    private const string AddNewScannerDeviceId = "__quickscan_add_new_scanner__";
+
     private readonly IScannerService _scannerService;
     private readonly IScannerConfigStore _configStore;
+    private readonly JsonApplicationSettingsStore _applicationSettingsStore;
+    private readonly ScannedPdfExportService _pdfExportService;
+    private readonly JsonLibraryService _libraryService;
     private readonly SemaphoreSlim _configLock = new(1, 1);
+    private readonly string _scanOutputDirectory = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "QuickScanManager",
+        "scans");
+    private string _pdfStorageDirectory;
+    private ApplicationSettings _applicationSettings;
     private ScannerConfig _config = new();
     private ScannerOption? _selectedScanner;
     private string? _selectedScannerId;
     private string _statusMessage = "Đang tìm máy scan...";
+    private StatusMessageType _statusMessageType = StatusMessageType.Warning;
     private string _selectedColorMode = "Color";
     private int _selectedResolutionDpi = 300;
     private string _selectedSource = "Flatbed";
-    private bool _isRefreshing;
+    private ScanPageViewModel? _selectedPage;
+    private bool _isScanning;
+    private bool _isSavingPdf;
+    private string _pdfFileName = string.Empty;
+    private string? _pdfCategory = "Chọn danh mục...";
+    private string _pdfTags = string.Empty;
+    private bool _isLoadingScanners;
     private bool _hasLoadedConfig;
     private bool _configCanBeSaved = true;
 
     public ScannerSettingsViewModel(
         IScannerService scannerService,
-        IScannerConfigStore configStore)
+        IScannerConfigStore configStore,
+        JsonApplicationSettingsStore applicationSettingsStore,
+        ScannedPdfExportService pdfExportService,
+        JsonLibraryService libraryService,
+        string pdfStorageDirectory)
     {
         _scannerService = scannerService;
         _configStore = configStore;
+        _applicationSettingsStore = applicationSettingsStore;
+        _pdfExportService = pdfExportService;
+        _libraryService = libraryService;
+        _pdfStorageDirectory = Path.GetFullPath(pdfStorageDirectory);
+        _applicationSettings = new ApplicationSettings
+        {
+            DefaultPdfDirectory = _pdfStorageDirectory
+        };
 
-        RefreshScannersCommand = new AsyncRelayCommand(
-            RefreshScannersAsync,
-            () => !IsRefreshing);
+        ScanPageCommand = new AsyncRelayCommand(
+            ScanPageAsync,
+            () => SelectedScanner is not null && !IsScanning && !IsSavingPdf);
+        SavePdfCommand = new AsyncRelayCommand(SavePdfAsync, CanSavePdf);
+        DeleteScanPageCommand = new RelayCommand<ScanPageViewModel>(
+            DeleteScanPage,
+            _ => !IsSavingPdf);
         OpenWindowsScannerSettingsCommand = new RelayCommand(OpenWindowsScannerSettings);
         AddOrEditProfileCommand = new RelayCommand(
             () => ProfileEditRequested?.Invoke(CreateProfileCopy(SelectedProfile)),
@@ -53,7 +93,31 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
 
     public ObservableCollection<ScannerOption> Scanners { get; } = [];
 
-    public AsyncRelayCommand RefreshScannersCommand { get; }
+    public IReadOnlyList<ScannerOption> ConfiguredScanners =>
+        _config.Profiles.Select(profile =>
+        {
+            var availableScanner = Scanners.FirstOrDefault(scanner =>
+                !scanner.IsAddNew &&
+                string.Equals(scanner.DeviceId, profile.DeviceId, StringComparison.OrdinalIgnoreCase));
+            return availableScanner ?? new ScannerOption(
+                profile.DeviceId,
+                profile.Alias,
+                $"{profile.Alias} (không kết nối)",
+                profile.Alias);
+        }).ToArray();
+
+    public ObservableCollection<ScanPageViewModel> ScanPages { get; } = [];
+
+    public IReadOnlyList<string> PdfCategories { get; } =
+        ["Chọn danh mục...", "Cá nhân", "Công việc", "Khác"];
+
+    public int AvailableScannerCount => Scanners.Count(scanner => !scanner.IsAddNew);
+
+    public int ScanPageCount => ScanPages.Count;
+
+    public AsyncRelayCommand ScanPageCommand { get; }
+
+    public RelayCommand<ScanPageViewModel> DeleteScanPageCommand { get; }
 
     public RelayCommand OpenWindowsScannerSettingsCommand { get; }
 
@@ -78,10 +142,18 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(SelectedProfile));
             OnPropertyChanged(nameof(ProfileButtonText));
             ApplyProfileSettings(value);
+            ScanPageCommand.RaiseCanExecuteChanged();
             AddOrEditProfileCommand.RaiseCanExecuteChanged();
             DeleteProfileCommand.RaiseCanExecuteChanged();
 
-            if (value is not null && !_isRefreshing && _configCanBeSaved)
+            if (!_isLoadingScanners)
+            {
+                SetStatusMessage(
+                    value is null ? "Chưa chọn máy scan." : $"Đã chọn {value.DisplayName}.",
+                    value is null ? StatusMessageType.Warning : StatusMessageType.Success);
+            }
+
+            if (value is not null && !_isLoadingScanners && _configCanBeSaved)
             {
                 _ = SaveLastUsedScannerAsync(value.DeviceId);
             }
@@ -93,6 +165,13 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
         get => _selectedScannerId;
         set
         {
+            if (string.Equals(value, AddNewScannerDeviceId, StringComparison.Ordinal))
+            {
+                OnPropertyChanged();
+                OpenWindowsScannerSettingsCommand.Execute(null);
+                return;
+            }
+
             var scanner = Scanners.FirstOrDefault(item =>
                 string.Equals(item.DeviceId, value, StringComparison.OrdinalIgnoreCase));
             SelectedScanner = scanner;
@@ -169,23 +248,445 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool IsRefreshing
+    public StatusMessageType StatusSeverity => _statusMessageType;
+
+    public string PdfFileName
     {
-        get => _isRefreshing;
-        private set
+        get => _pdfFileName;
+        set
         {
-            if (_isRefreshing == value)
+            if (string.Equals(_pdfFileName, value, StringComparison.Ordinal))
             {
                 return;
             }
 
-            _isRefreshing = value;
+            _pdfFileName = value;
             OnPropertyChanged();
-            RefreshScannersCommand.RaiseCanExecuteChanged();
+            SavePdfCommand.RaiseCanExecuteChanged();
         }
     }
 
-    public async Task InitializeAsync() => await RefreshScannersAsync();
+    public string? PdfCategory
+    {
+        get => _pdfCategory;
+        set => SetField(ref _pdfCategory, value);
+    }
+
+    public string PdfTags
+    {
+        get => _pdfTags;
+        set => SetField(ref _pdfTags, value);
+    }
+
+    public ScanPageViewModel? SelectedPage
+    {
+        get => _selectedPage;
+        set
+        {
+            if (ReferenceEquals(_selectedPage, value))
+            {
+                return;
+            }
+
+            _selectedPage = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool IsScanning
+    {
+        get => _isScanning;
+        private set
+        {
+            if (_isScanning == value)
+            {
+                return;
+            }
+
+            _isScanning = value;
+            OnPropertyChanged();
+            ScanPageCommand.RaiseCanExecuteChanged();
+            SavePdfCommand.RaiseCanExecuteChanged();
+        }
+    }
+
+    public bool IsSavingPdf
+    {
+        get => _isSavingPdf;
+        private set
+        {
+            if (_isSavingPdf == value)
+            {
+                return;
+            }
+
+            _isSavingPdf = value;
+            OnPropertyChanged();
+            SavePdfCommand.RaiseCanExecuteChanged();
+            ScanPageCommand.RaiseCanExecuteChanged();
+            DeleteScanPageCommand.RaiseCanExecuteChanged();
+        }
+    }
+
+    public AsyncRelayCommand SavePdfCommand { get; }
+
+    public async Task InitializeAsync()
+    {
+        string? settingsLoadError = null;
+        try
+        {
+            _applicationSettings = await _applicationSettingsStore.LoadAsync();
+            if (string.IsNullOrWhiteSpace(_applicationSettings.DefaultPdfDirectory))
+            {
+                _applicationSettings.DefaultPdfDirectory = _pdfStorageDirectory;
+            }
+
+            _applicationSettings.DefaultPdfDirectory =
+                Path.GetFullPath(_applicationSettings.DefaultPdfDirectory);
+            _pdfStorageDirectory = _applicationSettings.DefaultPdfDirectory;
+        }
+        catch (Exception exception) when (
+            exception is InvalidDataException or IOException or UnauthorizedAccessException)
+        {
+            settingsLoadError =
+                $"Không đọc được cài đặt ứng dụng. Đang dùng giá trị mặc định; hãy kiểm tra app-settings.json. {exception.Message}";
+        }
+
+        await LoadScannersAsync();
+        if (settingsLoadError is not null)
+        {
+            SetStatusMessage(settingsLoadError, StatusMessageType.Error);
+        }
+    }
+
+    public ApplicationSettings GetApplicationSettingsCopy() => new()
+    {
+        DefaultPdfDirectory = _applicationSettings.DefaultPdfDirectory,
+        DefaultScannerDeviceId = _applicationSettings.DefaultScannerDeviceId ??
+            ConfiguredScanners.FirstOrDefault(scanner =>
+                string.Equals(
+                    scanner.DeviceId,
+                    SelectedScanner?.DeviceId,
+                    StringComparison.OrdinalIgnoreCase))?.DeviceId,
+        AppendTimestampToPdfName = _applicationSettings.AppendTimestampToPdfName
+    };
+
+    public async Task SaveApplicationSettingsAsync(ApplicationSettings settings)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+        var directory = Path.GetFullPath(settings.DefaultPdfDirectory);
+        Directory.CreateDirectory(directory);
+
+        var savedSettings = new ApplicationSettings
+        {
+            DefaultPdfDirectory = directory,
+            DefaultScannerDeviceId = settings.DefaultScannerDeviceId,
+            AppendTimestampToPdfName = settings.AppendTimestampToPdfName
+        };
+        if (savedSettings.DefaultScannerDeviceId is not null &&
+            !ConfiguredScanners.Any(scanner =>
+                string.Equals(
+                    scanner.DeviceId,
+                    savedSettings.DefaultScannerDeviceId,
+                    StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new ArgumentException(
+                "The default scanner must be selected from a saved scanner profile.",
+                nameof(settings));
+        }
+
+        await _applicationSettingsStore.SaveAsync(savedSettings);
+        _applicationSettings = savedSettings;
+        _pdfStorageDirectory = savedSettings.DefaultPdfDirectory;
+
+        var selectedDefaultScanner = savedSettings.DefaultScannerDeviceId is null
+            ? null
+            : Scanners.FirstOrDefault(scanner =>
+                !scanner.IsAddNew &&
+                string.Equals(
+                    scanner.DeviceId,
+                    savedSettings.DefaultScannerDeviceId,
+                    StringComparison.OrdinalIgnoreCase));
+        if (selectedDefaultScanner is not null)
+        {
+            SelectedScanner = selectedDefaultScanner;
+        }
+
+        SetStatusMessage("Đã lưu cài đặt ứng dụng.", StatusMessageType.Success);
+    }
+
+    public void MoveScanPage(ScanPageViewModel page, int targetIndex, bool insertAfter)
+    {
+        var sourceIndex = ScanPages.IndexOf(page);
+        if (sourceIndex < 0 || targetIndex < 0 || targetIndex >= ScanPages.Count)
+        {
+            return;
+        }
+
+        if (IsSavingPdf)
+        {
+            return;
+        }
+
+        var destinationIndex = targetIndex + (insertAfter ? 1 : 0);
+        if (sourceIndex < destinationIndex)
+        {
+            destinationIndex--;
+        }
+
+        destinationIndex = Math.Clamp(destinationIndex, 0, ScanPages.Count - 1);
+        if (sourceIndex == destinationIndex)
+        {
+            return;
+        }
+
+        var selectedFilePath = SelectedPage?.FilePath;
+        ScanPages.Move(sourceIndex, destinationIndex);
+        RefreshPageNames();
+        SelectedPage = ScanPages.FirstOrDefault(item =>
+            string.Equals(item.FilePath, selectedFilePath, StringComparison.Ordinal));
+        SetStatusMessage(
+            $"Đã cập nhật thứ tự {ScanPages[destinationIndex].Name}.",
+            StatusMessageType.Success);
+    }
+
+    private bool CanSavePdf() =>
+        ScanPages.Count > 0 &&
+        !IsScanning &&
+        !IsSavingPdf &&
+        !string.IsNullOrWhiteSpace(PdfFileName);
+
+    private async Task SavePdfAsync()
+    {
+        var fileName = PdfFileName.Trim();
+        if (fileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+        {
+            fileName = fileName[..^4].TrimEnd();
+        }
+
+        if (!string.Equals(PdfFileName, fileName, StringComparison.Ordinal))
+        {
+            PdfFileName = fileName;
+        }
+
+        if (string.IsNullOrWhiteSpace(fileName) ||
+            fileName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 ||
+            !string.Equals(Path.GetFileName(fileName), fileName, StringComparison.Ordinal) ||
+            fileName.EndsWith('.') ||
+            IsReservedFileName(fileName))
+        {
+            SetStatusMessage(
+                "Tên file không hợp lệ. Hãy nhập tên file, không kèm đường dẫn.",
+                StatusMessageType.Warning);
+            return;
+        }
+
+        var storedFileName = fileName;
+        if (_applicationSettings.AppendTimestampToPdfName)
+        {
+            var timestamp = DateTime.Now.ToString(
+                "yyyy-MM-dd_hh-mm-ss",
+                CultureInfo.InvariantCulture);
+            storedFileName = $"{fileName}_{timestamp}";
+            var collision = 2;
+            while (File.Exists(Path.Combine(_pdfStorageDirectory, $"{storedFileName}.pdf")))
+            {
+                storedFileName = $"{fileName}_{timestamp}_{collision++}";
+            }
+        }
+
+        var outputPath = Path.Combine(_pdfStorageDirectory, $"{storedFileName}.pdf");
+        if (File.Exists(outputPath))
+        {
+            SetStatusMessage(
+                $"File “{storedFileName}.pdf” đã tồn tại. Hãy chọn tên khác để tránh ghi đè.",
+                StatusMessageType.Warning);
+            return;
+        }
+
+        var pages = ScanPages.ToArray();
+        var pageCount = pages.Length;
+        var category = PdfCategory;
+        var tags = PdfTags;
+        IsSavingPdf = true;
+        string? createdPdfPath = null;
+        try
+        {
+            SetStatusMessage("Đang tạo file PDF từ các trang đã quét...", StatusMessageType.Warning);
+            var documents = (await _libraryService.LoadAsync()).ToList();
+            await _pdfExportService.CreateAsync(
+                pages.Select(page => page.FilePath).ToArray(),
+                outputPath);
+            createdPdfPath = outputPath;
+
+            documents.Add(new DocumentItem
+            {
+                Name = storedFileName,
+                FilePath = outputPath,
+                Category = category == "Chọn danh mục..." ? null : category,
+                PageCount = pageCount,
+                Tags = string.IsNullOrWhiteSpace(tags) ? null : tags.Trim()
+            });
+            await _libraryService.SaveAsync(documents);
+            SetStatusMessage(
+                $"Đã lưu {storedFileName}.pdf ({pageCount} trang) và cập nhật library.json.",
+                StatusMessageType.Success);
+        }
+        catch (Exception exception) when (
+            exception is IOException or
+                UnauthorizedAccessException or
+                InvalidDataException or
+                System.Text.Json.JsonException or
+                ArgumentException or
+                InvalidOperationException or
+                NotSupportedException or
+                FormatException or
+                FileFormatException or
+                System.Security.SecurityException)
+        {
+            var message = createdPdfPath is null
+                ? $"Không tạo được file PDF: {exception.Message}"
+                : $"PDF đã tạo tại “{createdPdfPath}” nhưng không cập nhật được thư viện: {exception.Message}";
+            SetStatusMessage(message, StatusMessageType.Error);
+        }
+        finally
+        {
+            IsSavingPdf = false;
+        }
+    }
+
+    private static bool IsReservedFileName(string fileName)
+    {
+        var baseName = fileName.Split('.')[0];
+        return baseName.Equals("CON", StringComparison.OrdinalIgnoreCase) ||
+               baseName.Equals("PRN", StringComparison.OrdinalIgnoreCase) ||
+               baseName.Equals("AUX", StringComparison.OrdinalIgnoreCase) ||
+               baseName.Equals("NUL", StringComparison.OrdinalIgnoreCase) ||
+               (baseName.Length == 4 &&
+                (baseName.StartsWith("COM", StringComparison.OrdinalIgnoreCase) ||
+                 baseName.StartsWith("LPT", StringComparison.OrdinalIgnoreCase)) &&
+                baseName[3] is >= '1' and <= '9');
+    }
+
+    private void DeleteScanPage(ScanPageViewModel page)
+    {
+        if (IsSavingPdf)
+        {
+            return;
+        }
+
+        var index = ScanPages.IndexOf(page);
+        if (index < 0)
+        {
+            return;
+        }
+
+        try
+        {
+            File.Delete(page.FilePath);
+        }
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException)
+        {
+            SetStatusMessage(
+                $"Không xóa được {page.Name}: {exception.Message}",
+                StatusMessageType.Error);
+            return;
+        }
+
+        var wasSelected = ReferenceEquals(SelectedPage, page);
+        var selectedFilePath = wasSelected ? null : SelectedPage?.FilePath;
+        ScanPages.RemoveAt(index);
+        RefreshPageNames();
+
+        if (ScanPages.Count == 0)
+        {
+            SelectedPage = null;
+        }
+        else if (wasSelected)
+        {
+            SelectedPage = ScanPages[Math.Min(index, ScanPages.Count - 1)];
+        }
+        else
+        {
+            SelectedPage = ScanPages.FirstOrDefault(item =>
+                string.Equals(item.FilePath, selectedFilePath, StringComparison.Ordinal));
+        }
+
+        OnPropertyChanged(nameof(ScanPageCount));
+        SavePdfCommand.RaiseCanExecuteChanged();
+        SetStatusMessage($"Đã xóa {page.Name} khỏi danh sách.", StatusMessageType.Success);
+    }
+
+    private void RefreshPageNames()
+    {
+        for (var index = 0; index < ScanPages.Count; index++)
+        {
+            var page = ScanPages[index];
+            var name = $"Trang {index + 1}";
+            if (!string.Equals(page.Name, name, StringComparison.Ordinal))
+            {
+                ScanPages[index] = page with { Name = name };
+            }
+        }
+    }
+
+    private async Task ScanPageAsync()
+    {
+        var scanner = SelectedScanner
+            ?? throw new InvalidOperationException("Select a scanner before scanning a page.");
+
+        IsScanning = true;
+        SetStatusMessage($"Đang quét bằng {scanner.DisplayName}...", StatusMessageType.Warning);
+        string? scannedImagePath = null;
+        try
+        {
+            scannedImagePath = await _scannerService.ScanToImageAsync(
+                scanner.DeviceId,
+                _scanOutputDirectory);
+
+            var preview = new BitmapImage();
+            preview.BeginInit();
+            preview.CacheOption = BitmapCacheOption.OnLoad;
+            preview.UriSource = new Uri(Path.GetFullPath(scannedImagePath));
+            preview.EndInit();
+            preview.Freeze();
+
+            var page = new ScanPageViewModel(
+                $"Trang {ScanPages.Count + 1}",
+                scannedImagePath,
+                preview);
+            ScanPages.Add(page);
+            OnPropertyChanged(nameof(ScanPageCount));
+            SavePdfCommand.RaiseCanExecuteChanged();
+            SelectedPage = page;
+            SetStatusMessage($"Đã quét xong {page.Name}.", StatusMessageType.Success);
+        }
+        catch (Exception exception)
+        {
+            if (scannedImagePath is not null)
+            {
+                try
+                {
+                    File.Delete(scannedImagePath);
+                }
+                catch (Exception cleanupException) when (
+                    cleanupException is IOException or UnauthorizedAccessException)
+                {
+                    SetStatusMessage(
+                        $"Quét được ảnh nhưng không tải được bản xem trước. Không xóa được ảnh tạm tại “{scannedImagePath}”. {exception.Message} {cleanupException.Message}",
+                        StatusMessageType.Error);
+                    return;
+                }
+            }
+
+            SetStatusMessage($"Không quét được trang: {exception.Message}", StatusMessageType.Error);
+        }
+        finally
+        {
+            IsScanning = false;
+        }
+    }
 
     public async Task SaveProfileAsync(ScannerProfile profile)
     {
@@ -234,7 +735,8 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
             return config;
         });
         RebuildScannerOptions(SelectedScanner.DeviceId);
-        StatusMessage = $"Đã lưu bí danh “{savedProfile.Alias}”.";
+        OnPropertyChanged(nameof(ConfiguredScanners));
+        SetStatusMessage($"Đã lưu bí danh “{savedProfile.Alias}”.", StatusMessageType.Success);
     }
 
     public async Task DeleteSelectedProfileAsync()
@@ -252,12 +754,15 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
             return config;
         });
         RebuildScannerOptions(SelectedScanner?.DeviceId);
-        StatusMessage = "Đã xóa bí danh. Thiết bị vẫn được cài trong Windows.";
+        OnPropertyChanged(nameof(ConfiguredScanners));
+        SetStatusMessage(
+            "Đã xóa bí danh. Thiết bị vẫn được cài trong Windows.",
+            StatusMessageType.Success);
     }
 
-    private async Task RefreshScannersAsync()
+    private async Task LoadScannersAsync()
     {
-        IsRefreshing = true;
+        _isLoadingScanners = true;
         var requestedDeviceId = SelectedScannerId;
         try
         {
@@ -274,21 +779,41 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
                     _config = new ScannerConfig();
                     _configCanBeSaved = false;
                     _hasLoadedConfig = true;
-                    StatusMessage = $"Không đọc được cấu hình máy scan. Danh sách vẫn được tải; cấu hình không được ghi đè. {exception.Message}";
+                    SetStatusMessage(
+                        $"Không đọc được cấu hình máy scan. Danh sách vẫn được tải; cấu hình không được ghi đè. {exception.Message}",
+                        StatusMessageType.Error);
                 }
             }
 
-            requestedDeviceId ??= _config.LastUsedDeviceId;
             var devices = await _scannerService.GetAvailableScannersAsync();
+            var defaultScannerId = _applicationSettings.DefaultScannerDeviceId;
+            var defaultScannerAvailable = !string.IsNullOrWhiteSpace(defaultScannerId) &&
+                devices.Any(device => string.Equals(
+                    device.Id,
+                    defaultScannerId,
+                    StringComparison.OrdinalIgnoreCase));
+            requestedDeviceId ??= defaultScannerAvailable
+                ? defaultScannerId
+                : _config.LastUsedDeviceId;
             RebuildScannerOptions(requestedDeviceId, devices);
 
             if (devices.Count == 0)
             {
-                StatusMessage = "Không tìm thấy máy scan WIA. Kết nối thiết bị hoặc cài driver, rồi làm mới.";
+                SetStatusMessage(
+                    "Không tìm thấy máy scan WIA. Kết nối thiết bị hoặc cài driver, sau đó đóng và mở lại ứng dụng.",
+                    StatusMessageType.Warning);
             }
             else if (!string.IsNullOrWhiteSpace(requestedDeviceId) && SelectedScanner is null)
             {
-                StatusMessage = "Máy scan đã dùng gần nhất không còn kết nối. Hãy chọn thiết bị khác.";
+                SetStatusMessage(
+                    "Máy scan đã dùng gần nhất không còn kết nối. Hãy chọn thiết bị khác.",
+                    StatusMessageType.Warning);
+            }
+            else if (!string.IsNullOrWhiteSpace(defaultScannerId) && !defaultScannerAvailable)
+            {
+                SetStatusMessage(
+                    "Máy scan mặc định không khả dụng. Đã khôi phục máy scan gần nhất; kiểm tra kết nối hoặc chọn lại trong Cài đặt.",
+                    StatusMessageType.Warning);
             }
             else if (StatusMessage.StartsWith("Không đọc được cấu hình", StringComparison.Ordinal))
             {
@@ -296,19 +821,21 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
             }
             else
             {
-                StatusMessage = SelectedScanner is null
-                    ? $"Tìm thấy {devices.Count} máy scan. Hãy chọn một thiết bị."
-                    : $"Đã chọn {SelectedScanner.DisplayName}.";
+                SetStatusMessage(
+                    SelectedScanner is null
+                        ? $"Tìm thấy {devices.Count} máy scan. Hãy chọn một thiết bị."
+                        : $"Đã chọn {SelectedScanner.DisplayName}.",
+                    SelectedScanner is null ? StatusMessageType.Warning : StatusMessageType.Success);
             }
         }
         catch (Exception exception)
         {
             RebuildScannerOptions(null, []);
-            StatusMessage = DescribeScannerError(exception);
+            SetStatusMessage(DescribeScannerError(exception), StatusMessageType.Error);
         }
         finally
         {
-            IsRefreshing = false;
+            _isLoadingScanners = false;
         }
     }
 
@@ -317,6 +844,7 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
         IReadOnlyList<ScannerDevice>? devices = null)
     {
         devices ??= Scanners
+            .Where(option => !option.IsAddNew)
             .Select(option => new ScannerDevice(option.DeviceId, option.DeviceName))
             .ToList();
 
@@ -338,6 +866,12 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
                 : baseName;
             return new ScannerOption(device.Id, device.Name, displayName, profile?.Alias);
         }).ToList();
+        options.Add(new ScannerOption(
+            AddNewScannerDeviceId,
+            string.Empty,
+            "＋  Thêm máy mới",
+            null,
+            IsAddNew: true));
 
         var restoredScanner = options.FirstOrDefault(option =>
             !string.IsNullOrWhiteSpace(preferredDeviceId)
@@ -346,8 +880,8 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
                 preferredDeviceId,
                 StringComparison.OrdinalIgnoreCase));
 
-        var wasRefreshing = _isRefreshing;
-        _isRefreshing = true;
+        var wasLoadingScanners = _isLoadingScanners;
+        _isLoadingScanners = true;
         try
         {
             Scanners.Clear();
@@ -356,12 +890,14 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
                 Scanners.Add(option);
             }
 
+            OnPropertyChanged(nameof(AvailableScannerCount));
+            OnPropertyChanged(nameof(ConfiguredScanners));
             SelectedScanner = restoredScanner;
             OnPropertyChanged(nameof(SelectedScannerId));
         }
         finally
         {
-            _isRefreshing = wasRefreshing;
+            _isLoadingScanners = wasLoadingScanners;
         }
     }
 
@@ -394,7 +930,9 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
         }
         catch (Exception exception)
         {
-            StatusMessage = $"Không lưu được máy scan đã chọn: {exception.Message}";
+            SetStatusMessage(
+                $"Không lưu được máy scan đã chọn: {exception.Message}",
+                StatusMessageType.Error);
         }
     }
 
@@ -440,11 +978,15 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
             {
                 UseShellExecute = true
             });
-            StatusMessage = "Cài đặt Máy in & máy quét đã mở. Hoàn tất cài đặt Windows, rồi bấm Làm mới.";
+            SetStatusMessage(
+                "Cài đặt Máy in & máy quét đã mở. Sau khi thêm thiết bị, hãy mở lại ứng dụng để nạp danh sách mới.",
+                StatusMessageType.Success);
         }
         catch (Exception exception)
         {
-            StatusMessage = $"Không mở được cài đặt Windows. Hãy mở Settings > Bluetooth & devices > Printers & scanners. {exception.Message}";
+            SetStatusMessage(
+                $"Không mở được cài đặt Windows. Hãy mở Settings > Bluetooth & devices > Printers & scanners. {exception.Message}",
+                StatusMessageType.Error);
         }
     }
 
@@ -472,11 +1014,23 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
     private static string GetDeviceIdSuffix(string deviceId) =>
         deviceId.Length > 8 ? deviceId[^8..] : deviceId;
 
+    private void SetStatusMessage(string message, StatusMessageType severity)
+    {
+        StatusMessage = message;
+        if (_statusMessageType == severity)
+        {
+            return;
+        }
+
+        _statusMessageType = severity;
+        OnPropertyChanged(nameof(StatusSeverity));
+    }
+
     private static string DescribeScannerError(Exception exception)
     {
         if (exception is COMException comException)
         {
-            return $"Lỗi COM/driver máy scan: {comException.Message} (0x{comException.HResult:X8}). Kiểm tra thiết bị và driver WIA, rồi thử làm mới.";
+            return $"Lỗi COM/driver máy scan: {comException.Message} (0x{comException.HResult:X8}). Kiểm tra thiết bị và driver WIA, rồi đóng và mở lại ứng dụng.";
         }
 
         if (exception is PlatformNotSupportedException)

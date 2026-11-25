@@ -17,6 +17,9 @@ The starter values are aligned with the current QuickScanManager WPF UI:
 | Primary text | `color.text.primary` | `#172033` |
 | Secondary text | `color.text.muted` | `#748099` |
 | Default border | `color.border.default` | `#E5E9F0` |
+| Warning surface | `color.surface.warning` | `#FFF7E8` |
+| Warning text | `color.text.warning` | `#80530C` |
+| Warning border | `color.border.warning` | `#F4D9A6` |
 
 These are a starting point, not permission to assume every color combination
 passes accessibility contrast. Check foreground/background pairs in context.
@@ -35,6 +38,16 @@ passes accessibility contrast. Check foreground/background pairs in context.
   radii and border widths on one screen.
 - Define new tokens only when they represent a recurring semantic need. Update
   this document and the JSON together.
+- Use the `density.compact` metrics for data-heavy desktop workflows; retain
+  readable text and platform-appropriate hit targets instead of shrinking
+  controls indiscriminately.
+
+## Compact desktop density
+
+The WPF theme adapter exposes compact control, button, card, and section sizes.
+Use these for dense scanning/library screens while keeping the primary action
+visually prominent. The compact settings are semantic density values, not a
+second color palette.
 
 ## Application theme adapters
 

@@ -8,5 +8,11 @@ public sealed record DocumentItem
 
     public required string FilePath { get; init; }
 
+    public string? Category { get; init; }
+
+    public int PageCount { get; init; }
+
+    public string? Tags { get; init; }
+
     public DateTimeOffset CreatedAtUtc { get; init; } = DateTimeOffset.UtcNow;
 }

@@ -1,0 +1,30 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "QuickScanManager (WPF, giả lập scanner)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}\\QuickScanManager\\src\\ScanApp\\bin\\Debug\\net8.0-windows\\ScanApp.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}\\QuickScanManager\\src\\ScanApp",
+      "console": "internalConsole",
+      "stopAtEntry": false,
+      "preLaunchTask": "build QuickScanManager",
+      "env": {
+        "QUICKSCAN_USE_FAKE_SCANNER": "1"
+      }
+    },
+    {
+      "name": "QuickScanManager (WPF, scanner thật)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}\\QuickScanManager\\src\\ScanApp\\bin\\Debug\\net8.0-windows\\ScanApp.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}\\QuickScanManager\\src\\ScanApp",
+      "console": "internalConsole",
+      "stopAtEntry": false,
+      "preLaunchTask": "build QuickScanManager"
+    }
+  ]
+}
