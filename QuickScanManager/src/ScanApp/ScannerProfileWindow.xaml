@@ -8,28 +8,69 @@
         MinHeight="480"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner"
-        Background="#F5F7FA"
+        Background="{StaticResource SurfaceCanvasBrush}"
         FontFamily="Segoe UI"
-        Foreground="#172033">
+        Foreground="{StaticResource TextPrimaryBrush}">
     <Window.Resources>
         <Style x:Key="DialogLabel" TargetType="TextBlock">
             <Setter Property="FontSize" Value="11" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="#536078" />
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
             <Setter Property="Margin" Value="0,0,0,7" />
         </Style>
         <Style x:Key="DialogComboBox" TargetType="ComboBox">
             <Setter Property="Height" Value="40" />
             <Setter Property="Padding" Value="10,7" />
             <Setter Property="FontSize" Value="12" />
-            <Setter Property="Background" Value="White" />
-            <Setter Property="BorderBrush" Value="#E5E9F0" />
+            <Setter Property="Background" Value="{StaticResource SurfaceDefaultBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}" />
+        </Style>
+        <Style x:Key="DialogTextBox" TargetType="TextBox">
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Padding" Value="10,0" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Background" Value="{StaticResource SurfaceDefaultBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
         </Style>
         <Style x:Key="DialogButton" TargetType="Button">
             <Setter Property="Height" Value="40" />
             <Setter Property="Padding" Value="16,0" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="DialogButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{StaticResource ControlCornerRadius}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}"
+                                              RecognizesAccessKey="True" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="DialogButtonBorder"
+                                        Property="BorderBrush"
+                                        Value="{StaticResource BorderFocusBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="DialogButtonBorder"
+                                        Property="BorderBrush"
+                                        Value="{StaticResource BorderFocusBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="DialogButtonBorder" Property="Opacity" Value="0.5" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Window.Resources>
 
@@ -46,18 +87,14 @@
             <TextBlock x:Name="DeviceNameText"
                        Margin="0,5,0,0"
                        FontSize="11"
-                       Foreground="#748099"
+                       Foreground="{StaticResource TextMutedBrush}"
                        TextWrapping="Wrap" />
         </StackPanel>
 
         <StackPanel Grid.Row="1" Margin="0,22,0,0">
             <TextBlock Text="TÊN GỢI NHỚ" Style="{StaticResource DialogLabel}" />
             <TextBox x:Name="AliasTextBox"
-                     Height="40"
-                     Padding="10,0"
-                     VerticalContentAlignment="Center"
-                     FontSize="12"
-                     BorderBrush="#E5E9F0"
+                     Style="{StaticResource DialogTextBox}"
                      ToolTip="Ví dụ: Máy scan phòng kế toán" />
 
             <TextBlock Text="CHẾ ĐỘ MÀU"
@@ -88,7 +125,7 @@
             <TextBlock Text="Bí danh chỉ lưu trong ứng dụng, không thay đổi tên thiết bị trong Windows."
                        Margin="0,13,0,0"
                        FontSize="10"
-                       Foreground="#748099"
+                       Foreground="{StaticResource TextMutedBrush}"
                        TextWrapping="Wrap" />
         </StackPanel>
 
@@ -101,12 +138,12 @@
                     Style="{StaticResource DialogButton}"
                     Margin="0,0,8,0"
                     Background="White"
-                    BorderBrush="#E5E9F0" />
+                    BorderBrush="{StaticResource BorderDefaultBrush}" />
             <Button Content="Lưu bí danh"
                     IsDefault="True"
                     Click="Save_Click"
                     Style="{StaticResource DialogButton}"
-                    Background="#356AE6"
+                    Background="{StaticResource ActionPrimaryBrush}"
                     Foreground="White"
                     BorderThickness="0" />
         </StackPanel>

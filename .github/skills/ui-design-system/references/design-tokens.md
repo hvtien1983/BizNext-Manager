@@ -42,3 +42,7 @@ Map the tokens into each app's normal theme mechanism, for example WPF
 `ResourceDictionary`, web CSS custom properties, or a mobile resource/theme
 catalog. The JSON file is the shared source; generated or handwritten platform
 resources are adapters and should be traceable to it.
+
+The QuickScanManager WPF adapter lives in
+`QuickScanManager/src/ScanApp/Themes/DesignTokens.xaml` and is merged from
+`App.xaml`.
