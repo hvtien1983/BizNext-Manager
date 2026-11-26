@@ -43,7 +43,7 @@
     <sys:Double x:Key="CompactControlHeight">36</sys:Double>
     <sys:Double x:Key="CompactSecondaryButtonHeight">34</sys:Double>
     <sys:Double x:Key="CompactPrimaryButtonHeight">38</sys:Double>
-    <Thickness x:Key="CompactCardPadding">16</Thickness>
+    <Thickness x:Key="CompactCardPadding">10</Thickness>
     <sys:Double x:Key="CompactSectionGap">12</sys:Double>
     <sys:Double x:Key="CompactFieldGap">12</sys:Double>
     <sys:Double x:Key="CompactLabelFontSize">10</sys:Double>

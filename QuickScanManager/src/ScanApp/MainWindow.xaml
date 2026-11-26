@@ -7,8 +7,8 @@
         xmlns:controls="clr-namespace:ScanApp.Controls"
         mc:Ignorable="d"
         Title="BizNext PDF Manager"
-        Width="1440"
-        Height="948"
+        Width="1080"
+        Height="720"
         MinWidth="1080"
         MinHeight="720"
         Background="{DynamicResource SurfaceCanvasBrush}"
@@ -120,15 +120,14 @@
                 </ControlTemplate>
             </TabControl.Template>
             <TabItem x:Name="ScanTab" Header="Quét PDF" IsSelected="True">
-                <Grid Margin="10">
-
+                <Grid Margin="6">
                     <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="272" />
-                                <ColumnDefinition Width="16" />
+                                <ColumnDefinition Width="220" />
+                                <ColumnDefinition Width="6" />
                                 <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="16" />
-                                <ColumnDefinition Width="300" />
+                                <ColumnDefinition Width="6" />
+                                <ColumnDefinition Width="280" />
                             </Grid.ColumnDefinitions>
 
                             <Border Grid.Column="0" Style="{StaticResource SectionCard}">
