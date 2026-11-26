@@ -67,12 +67,13 @@ QuickScan continues to support:
   rotation and flips.
 - PDF creation with configurable output location, paper size, timestamp naming,
   and library metadata persistence.
+- PDF library browsing by filename and selected storage folder, including
+  child-folder navigation, sortable file details, and an in-app PDF viewer.
 - Light, Dark, and Windows System themes, selected from Dashboard settings.
 - The project-specific WPF workflow is documented in
   `.github/skills/wpf/SKILL.md`.
 
-The PDF library's search/edit/delete controls remain a UI scaffold and were not
-implemented as part of the host migration.
+PDF library rename, tag editing, and deletion are still not implemented.
 
 ## User data and compatibility
 
@@ -101,6 +102,6 @@ is the preferred development/debug path when no scanner hardware is available.
   QuickScan was visually checked in both themes, including themed ComboBox
   selections/popups and the minimum 1200x720 window size.
 - There is no separate automated test project currently.
-- Next feature work can implement Notes/Weather functionality or complete the
-  existing QuickScan PDF library interactions. See the architecture guide
+- Next feature work can implement Notes/Weather functionality or add
+  management actions to the QuickScan PDF library. See the architecture guide
   before adding a module or shared UI behavior.

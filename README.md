@@ -23,6 +23,8 @@ QuickScan giữ dữ liệu người dùng hiện có tại
 PDF, cấu hình máy scan hay thiết lập cũ.
 
 Đổi giao diện Sáng/Tối/Theo Windows từ nút **Cài đặt** ở cuối sidebar.
+Thư viện PDF hỗ trợ tìm theo tên file, duyệt thư mục con, sắp xếp thông tin
+PDF và mở tài liệu trong cửa sổ xem tích hợp.
 
 ## Kiến trúc
 

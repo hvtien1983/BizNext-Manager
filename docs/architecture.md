@@ -68,6 +68,28 @@ Keeping QuickScan's established data root avoids a one-time migration and
 prevents the new host from hiding or overwriting existing user PDFs or scanner
 configuration.
 
+## QuickScan PDF library
+
+- The library reads PDF files from the currently configured default output
+  folder and its direct child folders. The default folder is always the first
+  folder choice; child folders are listed above files when it is selected.
+- Selecting a folder or refreshing enumerates its PDFs and displays filename,
+  page count, file size, and scan/creation date. Filename search filters the
+  current folder, and column headers sort the results without moving child
+  folders below PDF rows in the default folder.
+- The initial order is scan date descending. In a child folder, a pinned
+  “Quay lại thư mục cha” row returns to the default folder. Right-clicking a
+  PDF row opens its actions: quick view, reveal in Explorer, rename, and
+  delete. Rename preserves matching library metadata; deletion asks for
+  confirmation and removes the corresponding metadata entry.
+- Existing `library.json` metadata supplies saved page counts and scan dates.
+  PDFs without metadata are inspected with the existing `PDFtoImage` renderer;
+  unreadable metadata/page counts are surfaced in the library status tooltip.
+- Double-clicking a child folder selects it in the folder picker. Double-
+  clicking a PDF opens `PdfViewerWindow`, which renders one page at a time and
+  supports previous/next navigation.
+- Tag editing is not yet implemented.
+
 ## UI and theming
 
 The Shell owns the application's look and feel and provides it to every module

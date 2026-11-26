@@ -14,6 +14,26 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Themes/QuickScanStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <ContextMenu x:Key="PdfLibraryContextMenu"
+                         DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"
+                         Background="{DynamicResource SurfaceDefaultBrush}"
+                         BorderBrush="{DynamicResource BorderSubtleBrush}"
+                         Foreground="{DynamicResource TextPrimaryBrush}">
+                <ContextMenu.Resources>
+                    <Style TargetType="MenuItem">
+                        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+                        <Setter Property="Padding" Value="12,7" />
+                        <Setter Property="MinWidth" Value="150" />
+                    </Style>
+                </ContextMenu.Resources>
+                <MenuItem Header="Xem nhanh" Click="QuickViewPdf_Click" />
+                <MenuItem Header="Mở vị trí" Click="OpenPdfLocation_Click" />
+                <MenuItem Header="Đổi tên" Click="RenamePdf_Click" />
+                <Separator />
+                <MenuItem Header="Xóa"
+                          Foreground="{DynamicResource TextDangerBrush}"
+                          Click="DeletePdf_Click" />
+            </ContextMenu>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
@@ -61,9 +81,11 @@
         </Border>
 
 
-        <TabControl Grid.Row="1"
+        <TabControl x:Name="MainTabControl"
+                    Grid.Row="1"
                     Background="Transparent"
                     BorderThickness="0"
+                    SelectionChanged="MainTabControl_SelectionChanged"
                     KeyboardNavigation.TabNavigation="Local">
             <TabControl.Template>
                 <ControlTemplate TargetType="TabControl">
@@ -565,13 +587,11 @@
 
             <TabItem x:Name="LibraryTab" Header="Thư viện PDF"
                      Foreground="{DynamicResource TextPrimaryBrush}">
-                        <Grid Margin="24,24,24,24">
+                        <Grid Margin="10">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="10" />
                                 <RowDefinition Height="*" />
-                                <RowDefinition Height="10" />
-                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
                             <Border Style="{StaticResource SectionCard}" Padding="12">
@@ -579,12 +599,10 @@
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="2.1*" />
                                         <ColumnDefinition Width="10" />
-                                        <ColumnDefinition Width="1.15*" />
-                                        <ColumnDefinition Width="10" />
-                                        <ColumnDefinition Width="1.15*" />
+                                        <ColumnDefinition Width="1.5*" />
                                         <ColumnDefinition Width="10" />
                                         <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="6" />
+                                        <ColumnDefinition Width="8" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
@@ -592,44 +610,38 @@
                                                    Style="{StaticResource FieldLabel}" />
                                         <TextBox x:Name="SearchBox"
                                                  Style="{StaticResource InputTextBox}"
-                                                 ToolTip="Tìm theo tên file, tag hoặc ghi chú" />
-                                        <TextBlock Text="Tìm theo tên file, tag hoặc ghi chú"
+                                                 TextChanged="SearchBox_TextChanged"
+                                                 AutomationProperties.Name="Tìm theo tên tập tin"
+                                                 ToolTip="Tìm theo tên tập tin" />
+                                        <TextBlock Text="Tìm theo tên tập tin"
                                                    Margin="1,4,0,0"
                                                    FontSize="{StaticResource CompactCaptionFontSize}"
                                                    Foreground="{DynamicResource TextMutedBrush}" />
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
-                                        <TextBlock Text="DANH MỤC"
+                                        <TextBlock Text="THƯ MỤC"
                                                    Style="{StaticResource FieldLabel}" />
-                                        <ComboBox Style="{StaticResource InputComboBox}"
-                                                  SelectedIndex="0">
-                                            <ComboBoxItem Content="Tất cả danh mục" />
-                                            <ComboBoxItem Content="Cá nhân" />
-                                            <ComboBoxItem Content="Công việc" />
-                                            <ComboBoxItem Content="Khác" />
-                                        </ComboBox>
+                                        <ComboBox x:Name="LibraryFolderComboBox"
+                                                  Style="{StaticResource InputComboBox}"
+                                                  DisplayMemberPath="Name"
+                                                  SelectionChanged="LibraryFolderComboBox_SelectionChanged"
+                                                  AutomationProperties.Name="Thư mục PDF" />
                                     </StackPanel>
-                                    <StackPanel Grid.Column="4">
-                                        <TextBlock Text="THỜI GIAN"
-                                                   Style="{StaticResource FieldLabel}" />
-                                        <ComboBox Style="{StaticResource InputComboBox}"
-                                                  SelectedIndex="0">
-                                            <ComboBoxItem Content="Tất cả thời gian" />
-                                            <ComboBoxItem Content="Tháng này" />
-                                            <ComboBoxItem Content="Tháng trước" />
-                                            <ComboBoxItem Content="Năm nay" />
-                                        </ComboBox>
-                                    </StackPanel>
-                                    <Button Grid.Column="6"
+                                    <Button x:Name="LibraryRefreshButton"
+                                            Grid.Column="4"
                                             Content="↻  Làm mới"
                                             Style="{StaticResource SecondaryButton}"
                                             VerticalAlignment="Top"
-                                            Margin="0,18,0,0" />
-                                    <Button Grid.Column="8"
-                                            Content="Mở thư mục lưu trữ"
+                                            Margin="0,18,0,0"
+                                            Click="RefreshLibrary_Click" />
+                                    <Button x:Name="OpenLibraryFolderButton"
+                                            Grid.Column="6"
+                                            Content="Mở trong cửa sổ ngoài"
                                             Style="{StaticResource SecondaryButton}"
                                             VerticalAlignment="Top"
-                                            Margin="0,18,0,0" />
+                                            Margin="0,18,0,0"
+                                            Click="OpenLibraryFolder_Click"
+                                            AutomationProperties.Name="Mở thư mục PDF trong cửa sổ ngoài" />
                                 </Grid>
                             </Border>
 
@@ -644,43 +656,90 @@
                                     <Grid>
                                         <DataGrid x:Name="LibraryGrid"
                                                   Style="{StaticResource LibraryDataGrid}"
-                                                  Margin="8,6">
-                                            <DataGrid.Columns>
-                                                <DataGridTextColumn Header="TÊN FILE"
-                                                                    Width="2.1*"
-                                                                    Binding="{Binding Name}" />
-                                                <DataGridTextColumn Header="DANH MỤC"
-                                                                    Width="1.1*"
-                                                                    Binding="{Binding Category}" />
-                                                <DataGridTextColumn Header="SỐ TRANG"
-                                                                    Width="0.8*"
-                                                                    Binding="{Binding PageCount}" />
-                                                <DataGridTextColumn Header="DUNG LƯỢNG"
-                                                                    Width="1*"
-                                                                    Binding="{Binding FileSize}" />
-                                                <DataGridTextColumn Header="NGÀY QUÉT"
-                                                                    Width="1.2*"
-                                                                    Binding="{Binding ScannedAt}" />
-                                                <DataGridTextColumn Header="TAG"
-                                                                    Width="1.4*"
-                                                                    Binding="{Binding Tags}" />
-                                            </DataGrid.Columns>
-                                        </DataGrid>
-                                        <StackPanel HorizontalAlignment="Center"
-                                                    VerticalAlignment="Center"
-                                                    IsHitTestVisible="False"
-                                                    Margin="0,12,0,0">
-                                            <StackPanel.Style>
-                                                <Style TargetType="StackPanel">
-                                                    <Setter Property="Visibility" Value="Visible" />
+                                                  Margin="8,6"
+                                                  AutomationProperties.Name="Danh sách file PDF và thư mục"
+                                                  MouseDoubleClick="LibraryGrid_MouseDoubleClick"
+                                                  Sorting="LibraryGrid_Sorting">
+                                            <DataGrid.RowStyle>
+                                                <Style TargetType="DataGridRow"
+                                                       BasedOn="{StaticResource LibraryDataGridRow}">
+                                                    <Setter Property="ContextMenu"
+                                                            Value="{StaticResource PdfLibraryContextMenu}" />
+                                                    <EventSetter Event="ContextMenuOpening"
+                                                                 Handler="LibraryGridRow_ContextMenuOpening" />
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding HasItems, ElementName=LibraryGrid}"
-                                                                     Value="True">
-                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                        <DataTrigger Binding="{Binding IsFolder}" Value="True">
+                                                            <Setter Property="ContextMenu" Value="{x:Null}" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
-                                            </StackPanel.Style>
+                                            </DataGrid.RowStyle>
+                                            <DataGrid.Columns>
+                                                <DataGridTemplateColumn Header="TÊN TẬP TIN"
+                                                                        Width="2.1*"
+                                                                        SortMemberPath="Name">
+                                                    <DataGridTemplateColumn.CellTemplate>
+                                                        <DataTemplate>
+                                                            <StackPanel Orientation="Horizontal"
+                                                                        VerticalAlignment="Center">
+                                                                <Path x:Name="FolderIcon"
+                                                                      Data="M 1,3 L 6,3 L 8,5 L 15,5 L 15,13 L 1,13 Z"
+                                                                      Width="14"
+                                                                      Height="12"
+                                                                      Margin="0,0,7,0"
+                                                                      Stretch="Fill"
+                                                                      Fill="{DynamicResource TextIconBrush}"
+                                                                      Visibility="Collapsed" />
+                                                                <Path x:Name="ParentFolderIcon"
+                                                                      Data="M 7,13 L 7,6 L 4,9 L 3,8 L 8,3 L 13,8 L 12,9 L 9,6 L 9,13 Z"
+                                                                      Width="12"
+                                                                      Height="12"
+                                                                      Margin="0,0,7,0"
+                                                                      Stretch="Fill"
+                                                                      Fill="{DynamicResource TextIconBrush}"
+                                                                      Visibility="Collapsed" />
+                                                                <TextBlock Text="{Binding Name}"
+                                                                           VerticalAlignment="Center"
+                                                                           TextTrimming="CharacterEllipsis" />
+                                                            </StackPanel>
+                                                            <DataTemplate.Triggers>
+                                                                <DataTrigger Binding="{Binding IsFolder}" Value="True">
+                                                                    <Setter TargetName="FolderIcon"
+                                                                            Property="Visibility"
+                                                                            Value="Visible" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding IsParentNavigation}" Value="True">
+                                                                    <Setter TargetName="FolderIcon"
+                                                                            Property="Visibility"
+                                                                            Value="Collapsed" />
+                                                                    <Setter TargetName="ParentFolderIcon"
+                                                                            Property="Visibility"
+                                                                            Value="Visible" />
+                                                                </DataTrigger>
+                                                            </DataTemplate.Triggers>
+                                                        </DataTemplate>
+                                                    </DataGridTemplateColumn.CellTemplate>
+                                                </DataGridTemplateColumn>
+                                                <DataGridTextColumn Header="SỐ TRANG"
+                                                                        Width="0.75*"
+                                                                        SortMemberPath="PageCount"
+                                                                        Binding="{Binding PageCount, TargetNullValue='—'}" />
+                                                <DataGridTextColumn Header="DUNG LƯỢNG"
+                                                                        Width="0.9*"
+                                                                        SortMemberPath="SizeBytes"
+                                                                        Binding="{Binding SizeDisplay}" />
+                                                <DataGridTextColumn Header="NGÀY QUÉT"
+                                                                        Width="1.2*"
+                                                                        SortMemberPath="ScannedAt"
+                                                                        Binding="{Binding ScannedAtDisplay}" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                        <StackPanel x:Name="LibraryEmptyState"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    IsHitTestVisible="False"
+                                                    Margin="0,12,0,0"
+                                                    Visibility="Visible">
                                             <Border Width="48"
                                                     Height="48"
                                                     CornerRadius="{StaticResource CardCornerRadius}"
@@ -693,12 +752,14 @@
                                                                   HorizontalAlignment="Center"
                                                                   VerticalAlignment="Center" />
                                             </Border>
-                                            <TextBlock Text="Thư viện của bạn đang trống"
+                                            <TextBlock x:Name="LibraryEmptyTitle"
+                                                       Text="Thư mục này chưa có file PDF"
                                                        Margin="0,10,0,0"
                                                        FontSize="12"
                                                        FontWeight="SemiBold"
                                                        HorizontalAlignment="Center" />
-                                            <TextBlock Text="Các file PDF đã lưu sẽ xuất hiện tại đây."
+                                            <TextBlock x:Name="LibraryEmptyDescription"
+                                                       Text="Các file PDF đã lưu sẽ xuất hiện tại đây."
                                                        Margin="0,4,0,0"
                                                        FontSize="{StaticResource CompactCaptionFontSize}"
                                                        Foreground="{DynamicResource TextMutedBrush}"
@@ -710,58 +771,18 @@
                                             BorderBrush="{DynamicResource BorderSubtleBrush}"
                                             BorderThickness="0,1,0,0">
                                         <Grid>
-                                            <TextBlock Text="Chọn một file để xem thông tin chi tiết."
+                                            <TextBlock Text="Nhấp phải vào file PDF để xem các thao tác."
                                                        FontSize="{StaticResource CompactCaptionFontSize}"
                                                        Foreground="{DynamicResource TextMutedBrush}"
                                                        VerticalAlignment="Center" />
-                                            <TextBlock Text="0 tài liệu"
+                                            <TextBlock x:Name="LibraryStatusText"
+                                                       Text="Đang tải thư viện..."
                                                        FontSize="{StaticResource CompactCaptionFontSize}"
                                                        Foreground="{DynamicResource TextMutedBrush}"
                                                        HorizontalAlignment="Right"
                                                        VerticalAlignment="Center" />
                                         </Grid>
                                     </Border>
-                                </Grid>
-                            </Border>
-
-                            <Border Grid.Row="4"
-                                    Style="{StaticResource SectionCard}"
-                                    Padding="12,10">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Text="THAO TÁC NHANH"
-                                                   FontSize="{StaticResource CompactCaptionFontSize}"
-                                                   FontWeight="Bold"
-                                                   Foreground="{DynamicResource TextMutedBrush}" />
-                                        <TextBlock Text="Mở, quản lý hoặc xóa file đã chọn."
-                                                   Margin="0,2,0,0"
-                                                   FontSize="{StaticResource CompactCaptionFontSize}"
-                                                   Foreground="{DynamicResource TextSecondaryBrush}" />
-                                    </StackPanel>
-                                    <WrapPanel Grid.Column="1"
-                                               VerticalAlignment="Center">
-                                        <Button Content="Mở file PDF"
-                                                Style="{StaticResource SecondaryButton}"
-                                                Margin="3,0"
-                                                IsEnabled="False" />
-                                        <Button Content="Mở vị trí file"
-                                                Style="{StaticResource SecondaryButton}"
-                                                Margin="3,0"
-                                                IsEnabled="False" />
-                                        <Button Content="Đổi tên / Sửa tag"
-                                                Style="{StaticResource SecondaryButton}"
-                                                Margin="3,0"
-                                                IsEnabled="False" />
-                                        <Button Content="Xóa file"
-                                                Style="{StaticResource SecondaryButton}"
-                                                Margin="3,0"
-                                                Foreground="{DynamicResource TextDangerBrush}"
-                                                IsEnabled="False" />
-                                    </WrapPanel>
                                 </Grid>
                             </Border>
                         </Grid>

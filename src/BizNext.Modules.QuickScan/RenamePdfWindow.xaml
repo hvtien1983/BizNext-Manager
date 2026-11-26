@@ -1,0 +1,46 @@
+<Window x:Class="BizNext.Modules.QuickScan.RenamePdfWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Đổi tên file PDF"
+        Width="420"
+        Height="195"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource SurfaceCanvasBrush}"
+        Foreground="{DynamicResource TextPrimaryBrush}"
+        FontFamily="Segoe UI">
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock Text="TÊN FILE MỚI"
+                   Style="{StaticResource FieldLabel}" />
+        <TextBox x:Name="FileNameTextBox"
+                 Grid.Row="1"
+                 Style="{StaticResource InputTextBox}"
+                 AutomationProperties.Name="Tên file PDF mới" />
+        <TextBlock Grid.Row="2"
+                   Text="Không cần nhập phần mở rộng .pdf."
+                   Margin="1,4,0,0"
+                   FontSize="{StaticResource CompactCaptionFontSize}"
+                   Foreground="{DynamicResource TextMutedBrush}" />
+        <StackPanel Grid.Row="3"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom">
+            <Button Content="Hủy"
+                    Style="{StaticResource SecondaryButton}"
+                    Width="82"
+                    IsCancel="True" />
+            <Button Content="Đổi tên"
+                    Style="{StaticResource PrimaryButton}"
+                    Width="92"
+                    Margin="8,0,0,0"
+                    IsDefault="True"
+                    Click="Rename_Click" />
+        </StackPanel>
+    </Grid>
+</Window>

@@ -151,6 +151,8 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
 
     public ObservableCollection<string> PdfLocations { get; } = [];
 
+    public string PdfStorageDirectory => _pdfStorageDirectory;
+
     public IReadOnlyList<PdfPageSize> PaperSizes { get; } = PdfPageSizeOptions.All;
 
     public int AvailableScannerCount => Scanners.Count(scanner => !scanner.IsAddNew);
