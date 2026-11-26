@@ -23,6 +23,9 @@ public partial class AppSettingsWindow : Window
         DefaultScannerComboBox.ItemsSource = _configuredScanners;
         DefaultScannerComboBox.SelectedValue = settings.DefaultScannerDeviceId;
         AppendTimestampCheckBox.IsChecked = settings.AppendTimestampToPdfName;
+        LightThemeRadioButton.IsChecked = settings.Theme == ThemePreference.Light;
+        DarkThemeRadioButton.IsChecked = settings.Theme == ThemePreference.Dark;
+        SystemThemeRadioButton.IsChecked = settings.Theme == ThemePreference.System;
 
         if (_configuredScanners.Count == 0)
         {
@@ -103,7 +106,12 @@ public partial class AppSettingsWindow : Window
         {
             DefaultPdfDirectory = directory,
             DefaultScannerDeviceId = selectedDeviceId,
-            AppendTimestampToPdfName = AppendTimestampCheckBox.IsChecked == true
+            AppendTimestampToPdfName = AppendTimestampCheckBox.IsChecked == true,
+            Theme = DarkThemeRadioButton.IsChecked == true
+                ? ThemePreference.Dark
+                : SystemThemeRadioButton.IsChecked == true
+                    ? ThemePreference.System
+                    : ThemePreference.Light
         };
         DialogResult = true;
     }

@@ -7,4 +7,6 @@ public sealed class ApplicationSettings
     public string? DefaultScannerDeviceId { get; set; }
 
     public bool AppendTimestampToPdfName { get; set; } = true;
+
+    public ThemePreference Theme { get; set; } = ThemePreference.Light;
 }

@@ -3,11 +3,11 @@
 > Living handoff document for future development sessions. Update this file when
 > architecture, user-visible behavior, or project status changes.
 >
-> Last updated: 2026-11-25
+> Last updated: 2026-11-26
 
 ## Project overview
 
-QuickScanManager is a Windows desktop application built with WPF and .NET 8.
+QuickScanManager is a Windows desktop application built with WPF and .NET 10.
 Its purpose is to scan paper documents, assemble scanned pages into PDFs, and
 maintain a library of saved documents. The application can use Windows Image
 Acquisition (WIA) hardware or an in-process fake scanner for development on
@@ -74,11 +74,13 @@ BizNext-PdfScanManager/
             │   ├── RelayCommand.cs
             │   └── RelayCommandOfT.cs
             ├── Models/ApplicationSettings.cs
+            ├── Models/ThemePreference.cs
             ├── Services/
             │   ├── JsonApplicationSettingsStore.cs
             │   └── ScannedPdfExportService.cs
             ├── Themes/
             │   ├── ControlStyles.xaml
+            │   ├── DarkTheme.xaml
             │   └── DesignTokens.xaml
             └── ViewModels/
                 ├── ScannerOption.cs
@@ -103,9 +105,9 @@ The paired XAML and code-behind files shown as `*.xaml[.cs]` are separate
   Windows and UI event handlers are in the window code-behind; keep business
   logic in services/ViewModels when extending the app.
 - **Theme resources** are loaded through `App.xaml`. Use semantic WPF resources
-  in `Themes/DesignTokens.xaml` and reusable control styles in
-  `Themes/ControlStyles.xaml`; the source of shared cross-platform UI tokens is
-  `.github/skills/ui-design-system/assets/design-tokens.json`.
+  in `Themes/DesignTokens.xaml` and `Themes/DarkTheme.xaml`, plus reusable
+  control styles in `Themes/ControlStyles.xaml`; shared semantic tokens are
+  sourced from `.github/skills/ui-design-system/assets/design-tokens.json`.
 - **Agent UI skills** under `.github/skills/` are development guidance only;
   they are not application/runtime dependencies.
 
@@ -152,6 +154,10 @@ The paired XAML and code-behind files shown as `*.xaml[.cs]` are separate
   default scanner from saved profiles, and toggle timestamp suffixing. When no
   default has been saved, it preselects the currently selected scanner if that
   scanner has a saved profile.
+- The **Cài đặt** dialog also provides Light, Dark, and System themes. Existing
+  settings default to Light; System reads Windows' `AppsUseLightTheme`
+  preference when the app starts. Theme colors are mapped through the WPF
+  resource dictionaries and shared semantic UI tokens.
 - App settings, scanner profiles, and library JSON are written atomically via
   a temporary file followed by replacement.
 - The **Thư viện PDF** tab currently has the designed search/filter controls,
@@ -166,7 +172,7 @@ The running app stores mutable user data under
 | File/folder | Purpose |
 | --- | --- |
 | `scanner-config.json` | Hardware scanner profiles and last-used device |
-| `app-settings.json` | Output folder, default scanner, timestamp option |
+| `app-settings.json` | Output folder, default scanner, timestamp option, theme |
 | `storage\library.json` | Metadata for exported PDFs |
 | `storage\pdfs\` | Default PDF output folder |
 | `scans\` | Temporary images produced by scanning |
@@ -190,7 +196,7 @@ dotnet run --project .\src\ScanApp\ScanApp.csproj
 
 VS Code provides launch configurations for fake and real scanners. Both run
 the `build QuickScanManager` task before launch. The app targets
-`net8.0-windows` with WPF enabled.
+`net10.0-windows` with WPF enabled. `ScanCore` targets `net10.0`.
 
 ## Development milestones
 
@@ -230,16 +236,24 @@ individual edit.
     dialog for the default output folder, scanner profile, and optional
     timestamp naming. The last-used configured scanner is preselected when no
     default has yet been saved.
+11. **Added selectable app themes.** Added Light, Dark, and Windows System
+    options to application settings, persisted the choice, and mapped the dark
+    palette through shared design tokens and dynamic WPF resources.
+12. **Upgraded the solution to .NET 10.** Retargeted all projects, updated the
+    VS Code launch paths and setup documentation, and verified the solution
+    build with the installed .NET SDK.
 
 ## Current verification and known gaps
 
 - Most recent solution build completed successfully with **0 warnings and
-  0 errors** after the settings preselection change.
+  0 errors** after upgrading all projects to .NET 10.
 - The settings dialog was opened in the fake-scanner app; both saved fake
   profiles appeared, the last-used profile was selected by default, and saving
   produced the expected fake settings JSON. Temporary test settings and the
   test process were cleaned up.
 - There is no separate automated test project in the current solution.
+- Theme behavior is startup-loaded from the existing settings JSON. The System
+  option follows Windows' app-theme preference on each app launch.
 - Before extending an area, inspect the actual command/event bindings and
   current worktree diffs; some library and batch-scan UI is still a visual
   scaffold rather than a finished workflow.

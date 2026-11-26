@@ -10,9 +10,9 @@
         Height="948"
         MinWidth="1080"
         MinHeight="720"
-        Background="{StaticResource SurfaceCanvasBrush}"
+        Background="{DynamicResource SurfaceCanvasBrush}"
         FontFamily="Segoe UI"
-        Foreground="{StaticResource TextPrimaryBrush}"
+        Foreground="{DynamicResource TextPrimaryBrush}"
         WindowStartupLocation="CenterScreen" 
         Icon="Assets/icon.ico">
     <Grid>
@@ -23,8 +23,8 @@
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0"
-                Background="{StaticResource SurfaceHeaderBrush}"
-                BorderBrush="{StaticResource BorderSubtleBrush}"
+                Background="{DynamicResource SurfaceHeaderBrush}"
+                BorderBrush="{DynamicResource BorderSubtleBrush}"
                 BorderThickness="0,0,0,1">
             <Grid Margin="24,0">
                 <Grid.ColumnDefinitions>
@@ -38,9 +38,9 @@
                     <Border Width="43"
                             Height="43"
                             CornerRadius="{StaticResource ControlCornerRadius}"
-                            Background="{StaticResource ActionPrimaryBrush}">
+                            Background="{DynamicResource ActionPrimaryBrush}">
                         <TextBlock Text="▣"
-                                   Foreground="{StaticResource TextOnPrimaryBrush}"
+                                   Foreground="{DynamicResource TextOnPrimaryBrush}"
                                    FontSize="20"
                                    FontWeight="Bold"
                                    HorizontalAlignment="Center"
@@ -53,7 +53,7 @@
                         <TextBlock Text="Tài liệu của bạn, gọn gàng một nơi"
                                    Margin="0,2,0,0"
                                    FontSize="{StaticResource CompactCaptionFontSize}"
-                                   Foreground="{StaticResource TextMutedBrush}" />
+                                   Foreground="{DynamicResource TextMutedBrush}" />
                     </StackPanel>
                 </StackPanel>
                 <StackPanel Grid.Column="2"
@@ -131,7 +131,7 @@
                                         <TextBlock Text="Cấu hình nguồn và chất lượng."
                                                    Margin="0,3,0,0"
                                                    FontSize="{StaticResource CompactCaptionFontSize}"
-                                                   Foreground="{StaticResource TextMutedBrush}" />
+                                                   Foreground="{DynamicResource TextMutedBrush}" />
                                     </StackPanel>
                                     <StackPanel Grid.Row="1" Margin="0,14,0,0">
                                         <TextBlock Text="MÁY SCAN"
@@ -147,7 +147,7 @@
                                                        Margin="10,0"
                                                        VerticalAlignment="Center"
                                                        FontSize="{StaticResource CompactControlFontSize}"
-                                                       Foreground="{StaticResource TextMutedBrush}"
+                                                       Foreground="{DynamicResource TextMutedBrush}"
                                                        IsHitTestVisible="False">
                                                 <TextBlock.Style>
                                                     <Style TargetType="TextBlock">
@@ -176,7 +176,7 @@
                                                     Style="{StaticResource SecondaryButton}"
                                                     Grid.Column="2"
                                                     Padding="5,0"
-                                                    Foreground="{StaticResource TextDangerBrush}"
+                                                    Foreground="{DynamicResource TextDangerBrush}"
                                                     Command="{Binding DeleteProfileCommand}" />
                                         </Grid>
                                     </StackPanel>
@@ -221,7 +221,7 @@
                                         <TextBlock Text="Quét hàng loạt khả dụng với khay ADF."
                                                    Margin="0,7,0,0"
                                                    FontSize="{StaticResource CompactCaptionFontSize}"
-                                                   Foreground="{StaticResource TextMutedBrush}"
+                                                   Foreground="{DynamicResource TextMutedBrush}"
                                                    TextWrapping="Wrap" />
                                     </StackPanel>
                                 </Grid>
@@ -249,25 +249,25 @@
                                             <TextBlock Text="Kiểm tra và sắp xếp trang trước khi lưu."
                                                        Margin="0,3,0,0"
                                                        FontSize="{StaticResource CompactCaptionFontSize}"
-                                                       Foreground="{StaticResource TextMutedBrush}" />
+                                                       Foreground="{DynamicResource TextMutedBrush}" />
                                         </StackPanel>
                                         <Border Grid.Column="1"
                                                 Padding="8,4"
                                                 CornerRadius="{StaticResource PillCornerRadius}"
-                                                Background="{StaticResource SurfaceEmptyBrush}"
+                                                Background="{DynamicResource SurfaceEmptyBrush}"
                                                 VerticalAlignment="Center">
                                             <TextBlock Text="{Binding ScanPageCount, StringFormat={}{0} trang}"
                                                        FontSize="{StaticResource CompactCaptionFontSize}"
                                                        FontWeight="SemiBold"
-                                                       Foreground="{StaticResource TextSecondaryBrush}" />
+                                                       Foreground="{DynamicResource TextSecondaryBrush}" />
                                         </Border>
                                     </Grid>
                                     <Border Grid.Row="1"
                                             Margin="0,12,0,10"
                                             CornerRadius="{StaticResource ControlCornerRadius}"
-                                            BorderBrush="{StaticResource BorderDefaultBrush}"
+                                            BorderBrush="{DynamicResource BorderDefaultBrush}"
                                             BorderThickness="1"
-                                            Background="{StaticResource SurfacePreviewBrush}">
+                                            Background="{DynamicResource SurfacePreviewBrush}">
                                         <Grid>
                                             <Image Source="{Binding SelectedPage.Preview}"
                                                    Stretch="Uniform"
@@ -299,11 +299,11 @@
                                             <Border Width="60"
                                                     Height="60"
                                                     CornerRadius="{StaticResource CardCornerRadius}"
-                                                    Background="{StaticResource ActionPrimarySubtleBrush}"
+                                                    Background="{DynamicResource ActionPrimarySubtleBrush}"
                                                     HorizontalAlignment="Center">
                                                 <TextBlock Text="▤"
                                                            FontSize="26"
-                                                           Foreground="{StaticResource ActionPrimaryBrush}"
+                                                           Foreground="{DynamicResource ActionPrimaryBrush}"
                                                            HorizontalAlignment="Center"
                                                            VerticalAlignment="Center" />
                                             </Border>
@@ -315,7 +315,7 @@
                                             <TextBlock Text="Quét trang hoặc thêm ảnh/PDF để bắt đầu."
                                                        Margin="0,5,0,0"
                                                        FontSize="{StaticResource CompactCaptionFontSize}"
-                                                       Foreground="{StaticResource TextMutedBrush}"
+                                                       Foreground="{DynamicResource TextMutedBrush}"
                                                        HorizontalAlignment="Center" />
                                             <Button Content="+   Thêm ảnh / PDF"
                                                     Style="{StaticResource PrimaryButton}"
@@ -325,7 +325,7 @@
                                             <TextBlock Text="Hỗ trợ PDF, JPG, PNG"
                                                        Margin="0,6,0,0"
                                                        FontSize="{StaticResource CompactCaptionFontSize}"
-                                                       Foreground="{StaticResource TextMutedBrush}"
+                                                       Foreground="{DynamicResource TextMutedBrush}"
                                                        HorizontalAlignment="Center" />
                                             </StackPanel>
                                         </Grid>
@@ -375,22 +375,22 @@
                                             <TextBlock Text="Kéo để sắp xếp thứ tự."
                                                        Margin="0,3,0,0"
                                                        FontSize="{StaticResource CompactCaptionFontSize}"
-                                                       Foreground="{StaticResource TextMutedBrush}" />
+                                                       Foreground="{DynamicResource TextMutedBrush}" />
                                         </StackPanel>
                                         <TextBlock Grid.Column="1"
                                                Text="{Binding ScanPageCount}"
                                                    FontSize="11"
                                                    FontWeight="SemiBold"
-                                                   Foreground="{StaticResource TextMutedBrush}"
+                                                   Foreground="{DynamicResource TextMutedBrush}"
                                                    VerticalAlignment="Center" />
                                     </Grid>
 
                                     <Border Grid.Row="1"
                                             Margin="0,10,0,10"
                                             CornerRadius="{StaticResource ControlCornerRadius}"
-                                            BorderBrush="{StaticResource BorderPreviewBrush}"
+                                            BorderBrush="{DynamicResource BorderPreviewBrush}"
                                             BorderThickness="1"
-                                            Background="{StaticResource SurfacePreviewBrush}">
+                                            Background="{DynamicResource SurfacePreviewBrush}">
                                         <Grid>
                                             <ListBox ItemsSource="{Binding ScanPages}"
                                                      x:Name="ScanPageList"
@@ -413,7 +413,7 @@
                                                                 <ColumnDefinition Width="Auto" />
                                                             </Grid.ColumnDefinitions>
                                                             <TextBlock Text="⋮⋮"
-                                                                       Foreground="{StaticResource TextMutedBrush}"
+                                                                       Foreground="{DynamicResource TextMutedBrush}"
                                                                        Cursor="SizeAll"
                                                                        VerticalAlignment="Center"
                                                                        HorizontalAlignment="Center"
@@ -422,8 +422,8 @@
                                                                     Width="48"
                                                                     Height="62"
                                                                     Padding="3"
-                                                                    Background="{StaticResource SurfaceDefaultBrush}"
-                                                                    BorderBrush="{StaticResource BorderDefaultBrush}"
+                                                                    Background="{DynamicResource SurfaceDefaultBrush}"
+                                                                    BorderBrush="{DynamicResource BorderDefaultBrush}"
                                                                     BorderThickness="1"
                                                                     CornerRadius="{StaticResource ControlCornerRadius}">
                                                                 <Image Source="{Binding Preview}"
@@ -435,11 +435,11 @@
                                                                 <TextBlock Text="{Binding Name}"
                                                                            FontSize="{StaticResource CompactLabelFontSize}"
                                                                            FontWeight="SemiBold"
-                                                                           Foreground="{StaticResource TextPrimaryBrush}" />
+                                                                           Foreground="{DynamicResource TextPrimaryBrush}" />
                                                                 <TextBlock Text="Ảnh đã quét"
                                                                            Margin="0,4,0,0"
                                                                            FontSize="{StaticResource CompactCaptionFontSize}"
-                                                                           Foreground="{StaticResource TextMutedBrush}" />
+                                                                           Foreground="{DynamicResource TextMutedBrush}" />
                                                             </StackPanel>
                                                             <Button Grid.Column="3"
                                                                     Style="{StaticResource ScanPageDeleteButton}"
@@ -467,12 +467,12 @@
                                             <TextBlock Text="Chưa có trang"
                                                        FontSize="{StaticResource CompactLabelFontSize}"
                                                        FontWeight="SemiBold"
-                                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}"
                                                        HorizontalAlignment="Center" />
                                             <TextBlock Text="Các trang đã quét sẽ hiện tại đây."
                                                        Margin="0,4,0,0"
                                                        FontSize="{StaticResource CompactCaptionFontSize}"
-                                                       Foreground="{StaticResource TextMutedBrush}"
+                                                       Foreground="{DynamicResource TextMutedBrush}"
                                                        TextWrapping="Wrap"
                                                        TextAlignment="Center"
                                                        Width="190" />
@@ -485,7 +485,7 @@
                                         <TextBlock Text="THÔNG TIN PDF"
                                                    FontSize="10"
                                                    FontWeight="Bold"
-                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
                                                    Margin="0,0,0,8" />
                                         <TextBlock Text="TÊN FILE PDF"
                                                    Style="{StaticResource FieldLabel}" />
@@ -498,10 +498,10 @@
                                             <Border HorizontalAlignment="Right"
                                                     Margin="0,1,1,1"
                                                     Padding="8,0"
-                                                    Background="{StaticResource SurfaceDefaultBrush}"
+                                                    Background="{DynamicResource SurfaceDefaultBrush}"
                                                     IsHitTestVisible="False">
                                                 <TextBlock Text=".pdf"
-                                                           Foreground="{StaticResource TextMutedBrush}"
+                                                           Foreground="{DynamicResource TextMutedBrush}"
                                                            FontSize="{StaticResource CompactControlFontSize}"
                                                            VerticalAlignment="Center" />
                                             </Border>
@@ -561,7 +561,7 @@
                                         <TextBlock Text="Tìm theo tên file, tag hoặc ghi chú"
                                                    Margin="1,4,0,0"
                                                    FontSize="{StaticResource CompactCaptionFontSize}"
-                                                   Foreground="{StaticResource TextMutedBrush}" />
+                                                   Foreground="{DynamicResource TextMutedBrush}" />
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
                                         <TextBlock Text="DANH MỤC"
@@ -649,11 +649,11 @@
                                             <Border Width="48"
                                                     Height="48"
                                                     CornerRadius="{StaticResource CardCornerRadius}"
-                                                    Background="{StaticResource SurfaceEmptyBrush}"
+                                                    Background="{DynamicResource SurfaceEmptyBrush}"
                                                     HorizontalAlignment="Center">
                                                 <TextBlock Text="▱"
                                                            FontSize="25"
-                                                           Foreground="{StaticResource TextIconBrush}"
+                                                           Foreground="{DynamicResource TextIconBrush}"
                                                            HorizontalAlignment="Center"
                                                            VerticalAlignment="Center" />
                                             </Border>
@@ -665,22 +665,22 @@
                                             <TextBlock Text="Các file PDF đã lưu sẽ xuất hiện tại đây."
                                                        Margin="0,4,0,0"
                                                        FontSize="{StaticResource CompactCaptionFontSize}"
-                                                       Foreground="{StaticResource TextMutedBrush}"
+                                                       Foreground="{DynamicResource TextMutedBrush}"
                                                        HorizontalAlignment="Center" />
                                         </StackPanel>
                                     </Grid>
                                     <Border Grid.Row="1"
                                             Padding="12,8"
-                                            BorderBrush="{StaticResource BorderSubtleBrush}"
+                                            BorderBrush="{DynamicResource BorderSubtleBrush}"
                                             BorderThickness="0,1,0,0">
                                         <Grid>
                                             <TextBlock Text="Chọn một file để xem thông tin chi tiết."
                                                        FontSize="{StaticResource CompactCaptionFontSize}"
-                                                       Foreground="{StaticResource TextMutedBrush}"
+                                                       Foreground="{DynamicResource TextMutedBrush}"
                                                        VerticalAlignment="Center" />
                                             <TextBlock Text="0 tài liệu"
                                                        FontSize="{StaticResource CompactCaptionFontSize}"
-                                                       Foreground="{StaticResource TextMutedBrush}"
+                                                       Foreground="{DynamicResource TextMutedBrush}"
                                                        HorizontalAlignment="Right"
                                                        VerticalAlignment="Center" />
                                         </Grid>
@@ -700,11 +700,11 @@
                                         <TextBlock Text="THAO TÁC NHANH"
                                                    FontSize="{StaticResource CompactCaptionFontSize}"
                                                    FontWeight="Bold"
-                                                   Foreground="{StaticResource TextMutedBrush}" />
+                                                   Foreground="{DynamicResource TextMutedBrush}" />
                                         <TextBlock Text="Mở, quản lý hoặc xóa file đã chọn."
                                                    Margin="0,2,0,0"
                                                    FontSize="{StaticResource CompactCaptionFontSize}"
-                                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                                                   Foreground="{DynamicResource TextSecondaryBrush}" />
                                     </StackPanel>
                                     <WrapPanel Grid.Column="1"
                                                VerticalAlignment="Center">
@@ -723,7 +723,7 @@
                                         <Button Content="Xóa file"
                                                 Style="{StaticResource SecondaryButton}"
                                                 Margin="3,0"
-                                                Foreground="{StaticResource TextDangerBrush}"
+                                                Foreground="{DynamicResource TextDangerBrush}"
                                                 IsEnabled="False" />
                                     </WrapPanel>
                                 </Grid>
@@ -733,8 +733,8 @@
         </TabControl>
 
         <Border Grid.Row="2"
-                Background="{StaticResource SurfaceDefaultBrush}"
-                BorderBrush="{StaticResource BorderSubtleBrush}"
+                Background="{DynamicResource SurfaceDefaultBrush}"
+                BorderBrush="{DynamicResource BorderSubtleBrush}"
                 BorderThickness="0,1,0,0">
             <Grid Margin="18,0">
                 <Grid.ColumnDefinitions>

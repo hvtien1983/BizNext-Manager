@@ -8,6 +8,7 @@ using ScanCore.Services;
 using ScanDevice.Models;
 using ScanDevice.Services;
 using System.IO;
+using ScanApp.Models;
 
 namespace ScanApp;
 
@@ -20,8 +21,9 @@ public partial class MainWindow : Window
     private Point _pageDragStart;
     private ScanPageViewModel? _pageBeingDragged;
 
-    public MainWindow()
+    public MainWindow(ApplicationSettings applicationSettings, string? settingsLoadError)
     {
+        ArgumentNullException.ThrowIfNull(applicationSettings);
         InitializeComponent();
 
         var useFakeScanner = string.Equals(
@@ -52,7 +54,9 @@ public partial class MainWindow : Window
             new JsonApplicationSettingsStore(applicationSettingsPath),
             new ScannedPdfExportService(),
             new JsonLibraryService(Path.Combine(storageDirectory, "library.json")),
-            Path.Combine(storageDirectory, "pdfs"));
+            Path.Combine(storageDirectory, "pdfs"),
+            applicationSettings,
+            settingsLoadError);
         _scannerViewModel.ProfileEditRequested += EditScannerProfile;
         _scannerViewModel.ProfileDeleteRequested += DeleteScannerProfile;
         DataContext = _scannerViewModel;
@@ -75,6 +79,7 @@ public partial class MainWindow : Window
         try
         {
             await _scannerViewModel.SaveApplicationSettingsAsync(dialog.Settings);
+            App.ApplyTheme(dialog.Settings.Theme);
         }
         catch (Exception exception) when (
             exception is IOException or

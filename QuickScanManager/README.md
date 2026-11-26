@@ -12,7 +12,7 @@
 
 ## Build và chạy
 
-Yêu cầu .NET 8 SDK trên Windows:
+Yêu cầu .NET 10 SDK trên Windows:
 
 ```powershell
 dotnet build .\QuickScanManager.sln
@@ -70,8 +70,10 @@ Các cài đặt ứng dụng được lưu tại
 `%LocalAppData%\QuickScanManager\app-settings.json` (chế độ giả lập dùng
 `app-settings.fake.json`). Nút **Cài đặt** cho phép đổi thư mục PDF mặc định,
 chọn máy scan mặc định trong các máy đã có bí danh/cấu hình, và bật/tắt hậu tố
-thời gian `yyyy-MM-dd_hh-mm-ss` trước `.pdf`. Khi hậu tố bật, tên trùng trong
-cùng một giây sẽ nhận thêm số thứ tự để không ghi đè file đã có.
+thời gian `yyyy-MM-dd_hh-mm-ss` trước `.pdf`, và chọn chủ đề **Màu Sáng**,
+**Màu Tối** hoặc **Theo hệ thống**. Chủ đề hệ thống đọc cài đặt giao diện ứng
+dụng của Windows mỗi khi mở app. Khi hậu tố bật, tên trùng trong cùng một giây
+sẽ nhận thêm số thứ tự để không ghi đè file đã có.
 Không cần cài NuGet package hoặc thêm COM reference: `ScanDevice` gọi WIA COM
 trực tiếp và thực hiện các thao tác WIA trên STA thread. Nếu tệp cấu hình JSON
 bị lỗi, danh sách thiết bị vẫn được dò nhưng ứng dụng sẽ không ghi đè cấu hình

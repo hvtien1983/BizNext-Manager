@@ -24,6 +24,14 @@ The starter values are aligned with the current QuickScanManager WPF UI:
 These are a starting point, not permission to assume every color combination
 passes accessibility contrast. Check foreground/background pairs in context.
 
+## Dark theme
+
+The shared dark semantic palette is in `color.themes.dark` in the token JSON.
+The QuickScanManager WPF adapter maps those roles in
+`QuickScanManager/src/ScanApp/Themes/DarkTheme.xaml`; the existing light
+palette remains the default adapter and fallback when a Windows app-theme
+preference cannot be read.
+
 ## Usage rules
 
 - Prefer semantic roles (`action.primary`, `text.muted`, `surface.raised`) over

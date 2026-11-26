@@ -3,14 +3,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Cài đặt"
         Width="560"
-        Height="490"
+        Height="620"
         MinWidth="520"
-        MinHeight="460"
+        MinHeight="600"
         ResizeMode="CanResize"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource SurfaceCanvasBrush}"
+        Background="{DynamicResource SurfaceCanvasBrush}"
         FontFamily="Segoe UI"
-        Foreground="{StaticResource TextPrimaryBrush}" 
+        Foreground="{DynamicResource TextPrimaryBrush}"
         Icon="Assets/icon.ico">
     <Grid Margin="24">
         <Grid.RowDefinitions>
@@ -26,7 +26,7 @@
             <TextBlock Text="Thiết lập nơi lưu PDF và máy scan mặc định."
                        Margin="0,5,0,0"
                        FontSize="{StaticResource CompactControlFontSize}"
-                       Foreground="{StaticResource TextMutedBrush}" />
+                       Foreground="{DynamicResource TextMutedBrush}" />
         </StackPanel>
 
         <Border Grid.Row="1"
@@ -54,7 +54,7 @@
                 <TextBlock Text="File PDF mới sẽ được lưu vào thư mục này."
                            Margin="1,5,0,0"
                            FontSize="{StaticResource CompactCaptionFontSize}"
-                           Foreground="{StaticResource TextMutedBrush}" />
+                           Foreground="{DynamicResource TextMutedBrush}" />
 
                 <TextBlock Text="MÁY SCAN MẶC ĐỊNH"
                            Style="{StaticResource FieldLabel}"
@@ -68,19 +68,51 @@
                            Text="Chỉ hiển thị máy scan đã có bí danh/cấu hình trong ứng dụng."
                            Margin="1,5,0,0"
                            FontSize="{StaticResource CompactCaptionFontSize}"
-                           Foreground="{StaticResource TextMutedBrush}"
+                           Foreground="{DynamicResource TextMutedBrush}"
                            TextWrapping="Wrap" />
 
                 <CheckBox x:Name="AppendTimestampCheckBox"
                           Margin="0,22,0,0"
                           FontSize="{StaticResource CompactControlFontSize}"
-                          Foreground="{StaticResource TextPrimaryBrush}"
+                          Foreground="{DynamicResource TextPrimaryBrush}"
                           Content="Tự thêm thời gian vào tên file để tránh trùng"
                           AutomationProperties.Name="Tự thêm thời gian vào tên file PDF" />
                 <TextBlock Text="Định dạng: yyyy-MM-dd_hh-mm-ss.pdf"
                            Margin="22,4,0,0"
                            FontSize="{StaticResource CompactCaptionFontSize}"
-                           Foreground="{StaticResource TextMutedBrush}" />
+                           Foreground="{DynamicResource TextMutedBrush}" />
+
+                <TextBlock Text="CHỦ ĐỀ"
+                           Style="{StaticResource FieldLabel}"
+                           Margin="0,20,0,5" />
+                <StackPanel>
+                    <RadioButton x:Name="LightThemeRadioButton"
+                                 GroupName="AppTheme"
+                                 Content="Màu Sáng"
+                                 Margin="0,3"
+                                 FontSize="{StaticResource CompactControlFontSize}"
+                                 Foreground="{DynamicResource TextPrimaryBrush}"
+                                 AutomationProperties.Name="Chủ đề Màu Sáng" />
+                    <RadioButton x:Name="DarkThemeRadioButton"
+                                 GroupName="AppTheme"
+                                 Content="Màu Tối"
+                                 Margin="0,3"
+                                 FontSize="{StaticResource CompactControlFontSize}"
+                                 Foreground="{DynamicResource TextPrimaryBrush}"
+                                 AutomationProperties.Name="Chủ đề Màu Tối" />
+                    <RadioButton x:Name="SystemThemeRadioButton"
+                                 GroupName="AppTheme"
+                                 Content="Theo hệ thống"
+                                 Margin="0,3"
+                                 FontSize="{StaticResource CompactControlFontSize}"
+                                 Foreground="{DynamicResource TextPrimaryBrush}"
+                                 AutomationProperties.Name="Chủ đề Theo hệ thống" />
+                </StackPanel>
+                <TextBlock Text="Theo cài đặt giao diện ứng dụng của Windows mỗi khi mở ứng dụng."
+                           Margin="22,2,0,0"
+                           FontSize="{StaticResource CompactCaptionFontSize}"
+                           Foreground="{DynamicResource TextMutedBrush}"
+                           TextWrapping="Wrap" />
             </StackPanel>
         </Border>
 

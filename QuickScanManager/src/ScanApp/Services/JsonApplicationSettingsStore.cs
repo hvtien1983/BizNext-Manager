@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using ScanApp.Models;
 
 namespace ScanApp.Services;
@@ -9,7 +10,8 @@ public sealed class JsonApplicationSettingsStore(string settingsPath)
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         WriteIndented = true,
-        PropertyNameCaseInsensitive = true
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
     };
 
     public async Task<ApplicationSettings> LoadAsync(CancellationToken cancellationToken = default)

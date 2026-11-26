@@ -32,6 +32,7 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
         "scans");
     private string _pdfStorageDirectory;
     private ApplicationSettings _applicationSettings;
+    private readonly string? _settingsLoadError;
     private ScannerConfig _config = new();
     private ScannerOption? _selectedScanner;
     private string? _selectedScannerId;
@@ -56,18 +57,19 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
         JsonApplicationSettingsStore applicationSettingsStore,
         ScannedPdfExportService pdfExportService,
         JsonLibraryService libraryService,
-        string pdfStorageDirectory)
+        string pdfStorageDirectory,
+        ApplicationSettings applicationSettings,
+        string? settingsLoadError)
     {
+        ArgumentNullException.ThrowIfNull(applicationSettings);
         _scannerService = scannerService;
         _configStore = configStore;
         _applicationSettingsStore = applicationSettingsStore;
         _pdfExportService = pdfExportService;
         _libraryService = libraryService;
         _pdfStorageDirectory = Path.GetFullPath(pdfStorageDirectory);
-        _applicationSettings = new ApplicationSettings
-        {
-            DefaultPdfDirectory = _pdfStorageDirectory
-        };
+        _applicationSettings = applicationSettings;
+        _settingsLoadError = settingsLoadError;
 
         ScanPageCommand = new AsyncRelayCommand(
             ScanPageAsync,
@@ -332,10 +334,9 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
 
     public async Task InitializeAsync()
     {
-        string? settingsLoadError = null;
+        var settingsLoadError = _settingsLoadError;
         try
         {
-            _applicationSettings = await _applicationSettingsStore.LoadAsync();
             if (string.IsNullOrWhiteSpace(_applicationSettings.DefaultPdfDirectory))
             {
                 _applicationSettings.DefaultPdfDirectory = _pdfStorageDirectory;
@@ -346,8 +347,16 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
             _pdfStorageDirectory = _applicationSettings.DefaultPdfDirectory;
         }
         catch (Exception exception) when (
-            exception is InvalidDataException or IOException or UnauthorizedAccessException)
+            exception is InvalidDataException or
+                IOException or
+                UnauthorizedAccessException or
+                ArgumentException or
+                NotSupportedException)
         {
+            _applicationSettings = new ApplicationSettings
+            {
+                DefaultPdfDirectory = _pdfStorageDirectory
+            };
             settingsLoadError =
                 $"Không đọc được cài đặt ứng dụng. Đang dùng giá trị mặc định; hãy kiểm tra app-settings.json. {exception.Message}";
         }
@@ -368,7 +377,8 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
                     scanner.DeviceId,
                     SelectedScanner?.DeviceId,
                     StringComparison.OrdinalIgnoreCase))?.DeviceId,
-        AppendTimestampToPdfName = _applicationSettings.AppendTimestampToPdfName
+        AppendTimestampToPdfName = _applicationSettings.AppendTimestampToPdfName,
+        Theme = _applicationSettings.Theme
     };
 
     public async Task SaveApplicationSettingsAsync(ApplicationSettings settings)
@@ -381,8 +391,16 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
         {
             DefaultPdfDirectory = directory,
             DefaultScannerDeviceId = settings.DefaultScannerDeviceId,
-            AppendTimestampToPdfName = settings.AppendTimestampToPdfName
+            AppendTimestampToPdfName = settings.AppendTimestampToPdfName,
+            Theme = settings.Theme
         };
+        if (settings.Theme is not (
+                ThemePreference.Light or
+                ThemePreference.Dark or
+                ThemePreference.System))
+        {
+            throw new ArgumentOutOfRangeException(nameof(settings), "The selected theme is invalid.");
+        }
         if (savedSettings.DefaultScannerDeviceId is not null &&
             !ConfiguredScanners.Any(scanner =>
                 string.Equals(
