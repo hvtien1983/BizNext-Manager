@@ -6,32 +6,36 @@ using System.Windows.Media.Imaging;
 
 namespace ScanApp.Services;
 
+public sealed record PdfPageSize(string Name, double WidthPoints, double HeightPoints);
+
 public sealed class ScannedPdfExportService
 {
     private static readonly byte[] PdfHeader =
         [0x25, 0x50, 0x44, 0x46, 0x2D, 0x31, 0x2E, 0x34, 0x0A, 0x25, 0xE2, 0xE3, 0xCF, 0xD3, 0x0A];
 
     public Task CreateAsync(
-        IReadOnlyList<string> imagePaths,
+        IReadOnlyList<BitmapSource> pages,
         string destinationPath,
+        PdfPageSize? pageSize,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(imagePaths);
+        ArgumentNullException.ThrowIfNull(pages);
         ArgumentException.ThrowIfNullOrWhiteSpace(destinationPath);
-        if (imagePaths.Count == 0)
+        if (pages.Count == 0)
         {
-            throw new ArgumentException("At least one scanned page is required.", nameof(imagePaths));
+            throw new ArgumentException("At least one scanned page is required.", nameof(pages));
         }
 
-        var pagePaths = imagePaths.ToArray();
+        var pageSources = pages.ToArray();
         return Task.Run(
-            () => Create(pagePaths, destinationPath, cancellationToken),
+            () => Create(pageSources, destinationPath, pageSize, cancellationToken),
             cancellationToken);
     }
 
     private static void Create(
-        IReadOnlyList<string> imagePaths,
+        IReadOnlyList<BitmapSource> pages,
         string destinationPath,
+        PdfPageSize? pageSize,
         CancellationToken cancellationToken)
     {
         var fullDestinationPath = Path.GetFullPath(destinationPath);
@@ -55,25 +59,37 @@ public sealed class ScannedPdfExportService
                 var objectOffsets = new List<long> { 0 };
                 WriteObject(output, objectOffsets, 1, "<< /Type /Catalog /Pages 2 0 R >>");
 
-                var pageReferences = Enumerable.Range(0, imagePaths.Count)
+                var pageReferences = Enumerable.Range(0, pages.Count)
                     .Select(index => $"{3 + (index * 3)} 0 R");
                 WriteObject(
                     output,
                     objectOffsets,
                     2,
-                    $"<< /Type /Pages /Kids [{string.Join(' ', pageReferences)}] /Count {imagePaths.Count} >>");
+                    $"<< /Type /Pages /Kids [{string.Join(' ', pageReferences)}] /Count {pages.Count} >>");
 
-                for (var index = 0; index < imagePaths.Count; index++)
+                for (var index = 0; index < pages.Count; index++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var (jpegBytes, pixelWidth, pixelHeight, dpiX, dpiY) = EncodePage(imagePaths[index]);
-                    var pageWidth = pixelWidth * 72d / dpiX;
-                    var pageHeight = pixelHeight * 72d / dpiY;
+                    var (jpegBytes, pixelWidth, pixelHeight, dpiX, dpiY) = EncodePage(pages[index]);
+                    var pageWidth = pageSize?.WidthPoints
+                        ?? pixelWidth * 72d / dpiX;
+                    var pageHeight = pageSize?.HeightPoints
+                        ?? pixelHeight * 72d / dpiY;
+                    var fitScale = pageSize is null
+                        ? 1d
+                        : Math.Min(
+                            pageWidth / pixelWidth,
+                            pageHeight / pixelHeight);
+                    var renderedWidth = pageSize is null ? pageWidth : pixelWidth * fitScale;
+                    var renderedHeight = pageSize is null ? pageHeight : pixelHeight * fitScale;
+                    var offsetX = (pageWidth - renderedWidth) / 2d;
+                    var offsetY = (pageHeight - renderedHeight) / 2d;
                     var pageObject = 3 + (index * 3);
                     var contentObject = pageObject + 1;
                     var imageObject = pageObject + 2;
                     var content = Encoding.ASCII.GetBytes(
-                        $"q\n{PdfNumber(pageWidth)} 0 0 {PdfNumber(pageHeight)} 0 0 cm\n/Im0 Do\nQ\n");
+                        $"q\n{PdfNumber(renderedWidth)} 0 0 {PdfNumber(renderedHeight)} " +
+                        $"{PdfNumber(offsetX)} {PdfNumber(offsetY)} cm\n/Im0 Do\nQ\n");
 
                     WriteObject(
                         output,
@@ -107,20 +123,14 @@ public sealed class ScannedPdfExportService
         }
     }
 
-    private static (byte[] Bytes, int Width, int Height, double DpiX, double DpiY) EncodePage(string imagePath)
+    private static (byte[] Bytes, int Width, int Height, double DpiX, double DpiY) EncodePage(BitmapSource source)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(imagePath);
-        using var input = File.OpenRead(imagePath);
-        var decoder = BitmapDecoder.Create(
-            input,
-            BitmapCreateOptions.PreservePixelFormat,
-            BitmapCacheOption.OnLoad);
-        if (decoder.Frames.Count == 0)
+        ArgumentNullException.ThrowIfNull(source);
+        if (source.PixelWidth == 0 || source.PixelHeight == 0)
         {
-            throw new InvalidDataException($"The scanned page has no image frames: {imagePath}");
+            throw new InvalidDataException("The scanned page has no image content.");
         }
 
-        var source = decoder.Frames[0];
         var rgbImage = new FormatConvertedBitmap(source, PixelFormats.Bgr24, null, 0);
         rgbImage.Freeze();
 

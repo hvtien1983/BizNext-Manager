@@ -126,6 +126,18 @@ public partial class MainWindow : Window
         await _scannerViewModel.ImportFilesAsync(dialog.FileNames);
     }
 
+    private void CreatePdfFolder_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new CreatePdfFolderWindow
+        {
+            Owner = this
+        };
+        if (dialog.ShowDialog() == true)
+        {
+            _scannerViewModel.CreatePdfLocation(dialog.FolderName);
+        }
+    }
+
     private async void EditScannerProfile(ScannerProfile? existingProfile)
     {
         var scanner = _scannerViewModel.SelectedScanner;

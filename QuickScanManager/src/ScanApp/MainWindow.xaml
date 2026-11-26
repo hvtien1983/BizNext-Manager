@@ -262,25 +262,25 @@
                                                 <TextBlock Text="{Binding BatchScanButtonText}" />
                                             </StackPanel>
                                         </Button>
-                                        <Button Style="{StaticResource SecondaryButton}"
-                                                Margin="0,6,0,0"
-                                                Click="AddFiles_Click"
-                                                IsEnabled="{Binding CanChangeScanConfiguration}"
-                                                AutomationProperties.Name="Thêm ảnh hoặc PDF">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="+"
-                                                           FontSize="16"
-                                                           FontWeight="Bold"
-                                                           Margin="0,0,8,0"
-                                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
-                                                <TextBlock Text="Thêm ảnh / PDF" />
-                                            </StackPanel>
-                                        </Button>
                                         <TextBlock Text="{Binding BatchScanAvailabilityMessage}"
                                                    Margin="0,7,0,0"
                                                    FontSize="{StaticResource CompactCaptionFontSize}"
                                                    Foreground="{DynamicResource TextMutedBrush}"
                                                    TextWrapping="Wrap" />
+                                        <Button Style="{StaticResource SecondaryButton}"
+                                                Margin="0,20,0,0"
+                                                Click="AddFiles_Click"
+                                                IsEnabled="{Binding CanChangeScanConfiguration}"
+                                                AutomationProperties.Name="Thêm ảnh hoặc PDF">
+                                            <StackPanel Orientation="Horizontal">
+                                                <controls:SvgIcon Source="assets/image-up.svg"
+                                                                  Width="17"
+                                                                  Height="17"
+                                                                  Margin="0,0,8,0"
+                                                                  Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                                <TextBlock Text="Thêm ảnh / PDF" />
+                                            </StackPanel>
+                                        </Button>
                                     </StackPanel>
                                 </Grid>
                                 </ScrollViewer>
@@ -330,6 +330,7 @@
                                             <Image Source="{Binding SelectedPage.Preview}"
                                                    Stretch="Uniform"
                                                    Margin="12"
+                                                   RenderOptions.BitmapScalingMode="HighQuality"
                                                    AutomationProperties.Name="Bản xem trước trang đã quét">
                                                 <Image.Style>
                                                     <Style TargetType="Image">
@@ -388,23 +389,27 @@
                                         <Button Content="↶  Xoay trái"
                                                 Style="{StaticResource SecondaryButton}"
                                                 Margin="2"
-                                                IsEnabled="False" />
+                                                Command="{Binding RotateSelectedPageLeftCommand}"
+                                                ToolTip="Xoay trang sang trái 90 độ"
+                                                AutomationProperties.Name="Xoay trang sang trái" />
                                         <Button Content="↷  Xoay phải"
                                                 Style="{StaticResource SecondaryButton}"
                                                 Margin="2"
-                                                IsEnabled="False" />
-                                        <Button Content="↑  Lên"
+                                                Command="{Binding RotateSelectedPageRightCommand}"
+                                                ToolTip="Xoay trang sang phải 90 độ"
+                                                AutomationProperties.Name="Xoay trang sang phải" />
+                                        <Button Content="↕  Lật lên/xuống"
                                                 Style="{StaticResource SecondaryButton}"
                                                 Margin="2"
-                                                IsEnabled="False" />
-                                        <Button Content="↓  Xuống"
+                                                Command="{Binding FlipSelectedPageVerticalCommand}"
+                                                ToolTip="Lật trang theo trục ngang"
+                                                AutomationProperties.Name="Lật trang lên xuống" />
+                                        <Button Content="↔  Lật trái/phải"
                                                 Style="{StaticResource SecondaryButton}"
                                                 Margin="2"
-                                                IsEnabled="False" />
-                                        <Button Content="Xóa trang"
-                                                Style="{StaticResource SecondaryButton}"
-                                                Margin="2"
-                                                IsEnabled="False" />
+                                                Command="{Binding FlipSelectedPageHorizontalCommand}"
+                                                ToolTip="Lật trang theo trục dọc"
+                                                AutomationProperties.Name="Lật trang trái phải" />
                                     </WrapPanel>
                                 </Grid>
                             </Border>
@@ -480,7 +485,8 @@
                                                                     BorderThickness="1"
                                                                     CornerRadius="{StaticResource ControlCornerRadius}">
                                                                 <Image Source="{Binding Preview}"
-                                                                       Stretch="Uniform" />
+                                                                       Stretch="Uniform"
+                                                                       RenderOptions.BitmapScalingMode="HighQuality" />
                                                             </Border>
                                                             <StackPanel Grid.Column="2"
                                                                         Margin="10,0,0,0"
@@ -559,18 +565,40 @@
                                                            VerticalAlignment="Center" />
                                             </Border>
                                         </Grid>
-                                        <TextBlock Text="DANH MỤC"
+                                        <TextBlock Text="NƠI LƯU"
+                                                   Style="{StaticResource FieldLabel}"
+                                                   Margin="0,10,0,5" />
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="6" />
+                                                <ColumnDefinition Width="34" />
+                                            </Grid.ColumnDefinitions>
+                                            <ComboBox Style="{StaticResource InputComboBox}"
+                                                      ItemsSource="{Binding PdfLocations}"
+                                                      SelectedItem="{Binding PdfLocation, Mode=TwoWay}"
+                                                      AutomationProperties.Name="Nơi lưu PDF" />
+                                            <Button Grid.Column="2"
+                                                    Style="{StaticResource SecondaryButton}"
+                                                    Padding="0"
+                                                    Click="CreatePdfFolder_Click"
+                                                    ToolTip="Tạo thư mục mới"
+                                                    AutomationProperties.Name="Tạo thư mục lưu PDF">
+                                                <TextBlock Text="+"
+                                                           FontSize="16"
+                                                           FontWeight="Bold"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" />
+                                            </Button>
+                                        </Grid>
+                                        <TextBlock Text="CHỌN KHỔ GIẤY"
                                                    Style="{StaticResource FieldLabel}"
                                                    Margin="0,10,0,5" />
                                         <ComboBox Style="{StaticResource InputComboBox}"
-                                                  ItemsSource="{Binding PdfCategories}"
-                                                  SelectedItem="{Binding PdfCategory, Mode=TwoWay}" />
-                                        <TextBlock Text="TAG"
-                                                   Style="{StaticResource FieldLabel}"
-                                                   Margin="0,10,0,5" />
-                                        <TextBox Style="{StaticResource InputTextBox}"
-                                                 Text="{Binding PdfTags, UpdateSourceTrigger=PropertyChanged}"
-                                                 ToolTip="Ví dụ: hợp đồng, hóa đơn..." />
+                                                  ItemsSource="{Binding PaperSizes}"
+                                                  DisplayMemberPath="Name"
+                                                  SelectedItem="{Binding SelectedPdfPageSize, Mode=TwoWay}"
+                                                  AutomationProperties.Name="Khổ giấy PDF" />
                                         <Button Content="Lưu thành PDF"
                                                 Style="{StaticResource PrimaryButton}"
                                                 Margin="0,12,0,0"

@@ -39,10 +39,17 @@ chuyển thành **Tạm dừng** và các trang được thêm vào danh sách n
 xong. Chế độ giả lập quét ba trang để thử luồng này. Nút **Thêm ảnh / PDF** nằm
 dưới nút quét hàng loạt; nhấp nút sẽ mở cửa sổ chọn nhiều file, nạp ảnh hoặc
 render từng trang PDF vào danh sách trang.
+Chọn một trang để dùng các nút **Xoay trái/phải** hoặc **Lật lên/xuống** và
+**Lật trái/phải**; ảnh xem trước, thumbnail và PDF xuất ra đều dùng cùng hướng
+đã chỉnh sửa. Ảnh được scale vừa khung xem trước.
 Ảnh tạm nằm trong `%LocalAppData%\QuickScanManager\scans`. Dùng trường **Tên
 file PDF** để nhập tên (phần mở rộng `.pdf` được gắn cố định), sau đó bấm
 **Lưu thành PDF** để ghép các trang theo thứ tự trong danh sách. File được lưu
-trong `%LocalAppData%\QuickScanManager\storage\pdfs` và đăng ký trong
+theo mục **Nơi lưu** đã chọn; dòng **Thư mục mặc định** lưu vào thư mục gốc,
+còn nút `+` bên cạnh tạo thư mục con mới trong thư mục mặc định. Khung
+**Chọn khổ giấy** hỗ trợ các khổ phổ biến và scale trang ảnh vừa khổ đã chọn.
+Sau khi lưu thành công, tên file được xóa và nút lưu được vô hiệu hóa cho đến
+khi nhập tên mới. File được đăng ký trong
 `library.json`. Thông báo thao tác hiển thị ở thanh cuối cửa sổ, phân biệt
 thành công, chú ý và lỗi bằng màu sắc. Dịch vụ WIA thật không bị gọi khi biến
 môi trường được bật.

@@ -144,8 +144,10 @@ The paired XAML and code-behind files shown as `*.xaml[.cs]` are separate
 - Batch scanning checks the selected device's ADF capability before
   enabling the action, rechecks before starting, appends each completed page to
   the page list, and can pause between pages. The fake scanner simulates a
-  three-page ADF batch. Page-rotation controls are still presentational until a
-  corresponding command/behavior is implemented.
+  three-page ADF batch.
+- Selected pages can be rotated left/right and flipped vertically/horizontally.
+  The transformed preview is used by both the page thumbnail and final PDF
+  export; image previews scale uniformly to fit their display areas.
 
 ### PDF export, library data, and app settings
 
@@ -155,6 +157,14 @@ The paired XAML and code-behind files shown as `*.xaml[.cs]` are separate
 - The `.pdf` suffix is fixed in the filename UI. An optional timestamp suffix
   uses `yyyy-MM-dd_hh-mm-ss`; a numeric suffix avoids collisions within the
   same second. Existing files are not silently overwritten.
+- The PDF information panel uses **Nơi lưu** instead of category. It lists
+  immediate subfolders of the configured default PDF folder, with **Thư mục
+  mặc định** always first. A small `+` button creates and selects a named
+  subfolder.
+- The PDF information panel provides common paper sizes and exports with fit-to-
+  page scaling for A4, A5, A3, Letter, Legal, B5, and Tabloid. A successful
+  save clears the filename and disables **Lưu thành PDF** until a new name is
+  entered.
 - The **Cài đặt** dialog lets the user choose the PDF output folder, choose the
   default scanner from saved profiles, and toggle timestamp suffixing. When no
   default has been saved, it preselects the currently selected scanner if that
@@ -272,8 +282,6 @@ individual edit.
 1. Complete library loading, search/category/date filtering, open/open-location,
    rename/tag editing, and safe deletion while keeping `library.json` in sync.
 2. Wire and verify batch scanning for ADF devices.
-3. Implement page rotation (and any remaining page-management actions) as
-   explicit ViewModel commands.
-4. Add focused tests for filename validation/collision handling, JSON stores,
-   PDF export, and fake scanner behavior where test infrastructure is
-   introduced.
+3. Add focused tests for page transforms, PDF page-size fitting, filename
+   validation/collision handling, JSON stores, and fake scanner behavior where
+   test infrastructure is introduced.

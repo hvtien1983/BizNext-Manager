@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using ScanApp.Commands;
 using ScanApp.Models;
@@ -18,6 +19,20 @@ using PDFtoImage;
 using PDFtoImage.Exceptions;
 
 namespace ScanApp.ViewModels;
+
+internal static class PdfPageSizeOptions
+{
+    public static IReadOnlyList<PdfPageSize> All { get; } =
+    [
+        new("A4", 595.28d, 841.89d),
+        new("A5", 419.53d, 595.28d),
+        new("A3", 841.89d, 1190.55d),
+        new("Letter", 612d, 792d),
+        new("Legal", 612d, 1008d),
+        new("B5", 498.90d, 708.66d),
+        new("Tabloid", 792d, 1224d)
+    ];
+}
 
 public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
 {
@@ -54,8 +69,8 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
     private bool _isSavingPdf;
     private bool _isImportingFiles;
     private string _pdfFileName = string.Empty;
-    private string? _pdfCategory = "Chọn danh mục...";
-    private string _pdfTags = string.Empty;
+    private string _pdfLocation = "Thư mục mặc định";
+    private PdfPageSize _selectedPdfPageSize = PdfPageSizeOptions.All[0];
     private bool _isLoadingScanners;
     private bool _hasLoadedConfig;
     private bool _configCanBeSaved = true;
@@ -90,6 +105,18 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
         DeleteScanPageCommand = new RelayCommand<ScanPageViewModel>(
             DeleteScanPage,
             _ => !IsSavingPdf);
+        RotateSelectedPageLeftCommand = new RelayCommand(
+            () => TransformSelectedPage(-90, flipHorizontal: false, flipVertical: false),
+            CanTransformSelectedPage);
+        RotateSelectedPageRightCommand = new RelayCommand(
+            () => TransformSelectedPage(90, flipHorizontal: false, flipVertical: false),
+            CanTransformSelectedPage);
+        FlipSelectedPageVerticalCommand = new RelayCommand(
+            () => TransformSelectedPage(0, flipHorizontal: false, flipVertical: true),
+            CanTransformSelectedPage);
+        FlipSelectedPageHorizontalCommand = new RelayCommand(
+            () => TransformSelectedPage(0, flipHorizontal: true, flipVertical: false),
+            CanTransformSelectedPage);
         OpenWindowsScannerSettingsCommand = new RelayCommand(OpenWindowsScannerSettings);
         AddOrEditProfileCommand = new RelayCommand(
             () => ProfileEditRequested?.Invoke(CreateProfileCopy(SelectedProfile)),
@@ -122,8 +149,9 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
 
     public ObservableCollection<ScanPageViewModel> ScanPages { get; } = [];
 
-    public IReadOnlyList<string> PdfCategories { get; } =
-        ["Chọn danh mục...", "Cá nhân", "Công việc", "Khác"];
+    public ObservableCollection<string> PdfLocations { get; } = [];
+
+    public IReadOnlyList<PdfPageSize> PaperSizes { get; } = PdfPageSizeOptions.All;
 
     public int AvailableScannerCount => Scanners.Count(scanner => !scanner.IsAddNew);
 
@@ -154,6 +182,14 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
                     : "Quét hàng loạt cần máy scan có khay nạp ADF.";
 
     public RelayCommand<ScanPageViewModel> DeleteScanPageCommand { get; }
+
+    public RelayCommand RotateSelectedPageLeftCommand { get; }
+
+    public RelayCommand RotateSelectedPageRightCommand { get; }
+
+    public RelayCommand FlipSelectedPageVerticalCommand { get; }
+
+    public RelayCommand FlipSelectedPageHorizontalCommand { get; }
 
     public RelayCommand OpenWindowsScannerSettingsCommand { get; }
 
@@ -251,7 +287,7 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
         }
 
         var importedCount = 0;
-        var renderOptions = new RenderOptions
+        var renderOptions = new PDFtoImage.RenderOptions
         {
             Dpi = 300,
             WithAspectRatio = true,
@@ -437,16 +473,34 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
         }
     }
 
-    public string? PdfCategory
+    public string PdfLocation
     {
-        get => _pdfCategory;
-        set => SetField(ref _pdfCategory, value);
+        get => _pdfLocation;
+        set
+        {
+            if (string.Equals(_pdfLocation, value, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            _pdfLocation = value ?? "Thư mục mặc định";
+            OnPropertyChanged();
+        }
     }
 
-    public string PdfTags
+    public PdfPageSize SelectedPdfPageSize
     {
-        get => _pdfTags;
-        set => SetField(ref _pdfTags, value);
+        get => _selectedPdfPageSize;
+        set
+        {
+            if (ReferenceEquals(_selectedPdfPageSize, value))
+            {
+                return;
+            }
+
+            _selectedPdfPageSize = value ?? PdfPageSizeOptions.All[0];
+            OnPropertyChanged();
+        }
     }
 
     public ScanPageViewModel? SelectedPage
@@ -461,6 +515,7 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
 
             _selectedPage = value;
             OnPropertyChanged();
+            RaisePageTransformCommands();
         }
     }
 
@@ -481,6 +536,7 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
             BatchScanCommand.RaiseCanExecuteChanged();
             ScanPageCommand.RaiseCanExecuteChanged();
             SavePdfCommand.RaiseCanExecuteChanged();
+            RaisePageTransformCommands();
         }
     }
 
@@ -500,6 +556,7 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(BatchScanAvailabilityMessage));
             OnPropertyChanged(nameof(CanBatchScan));
             BatchScanCommand.RaiseCanExecuteChanged();
+            RaisePageTransformCommands();
         }
     }
 
@@ -538,6 +595,7 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
             SavePdfCommand.RaiseCanExecuteChanged();
             ScanPageCommand.RaiseCanExecuteChanged();
             DeleteScanPageCommand.RaiseCanExecuteChanged();
+            RaisePageTransformCommands();
         }
     }
 
@@ -558,6 +616,7 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
             BatchScanCommand.RaiseCanExecuteChanged();
             SavePdfCommand.RaiseCanExecuteChanged();
             ScanPageCommand.RaiseCanExecuteChanged();
+            RaisePageTransformCommands();
         }
     }
 
@@ -576,6 +635,7 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
             _applicationSettings.DefaultPdfDirectory =
                 Path.GetFullPath(_applicationSettings.DefaultPdfDirectory);
             _pdfStorageDirectory = _applicationSettings.DefaultPdfDirectory;
+            RefreshPdfLocations();
         }
         catch (Exception exception) when (
             exception is InvalidDataException or
@@ -647,6 +707,7 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
         await _applicationSettingsStore.SaveAsync(savedSettings);
         _applicationSettings = savedSettings;
         _pdfStorageDirectory = savedSettings.DefaultPdfDirectory;
+        RefreshPdfLocations();
 
         var selectedDefaultScanner = savedSettings.DefaultScannerDeviceId is null
             ? null
@@ -662,6 +723,63 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
         }
 
         SetStatusMessage("Đã lưu cài đặt ứng dụng.", StatusMessageType.Success);
+    }
+
+    public void CreatePdfLocation(string folderName)
+    {
+        var name = folderName?.Trim();
+        if (string.IsNullOrWhiteSpace(name) ||
+            name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 ||
+            !string.Equals(Path.GetFileName(name), name, StringComparison.Ordinal) ||
+            name.EndsWith('.') ||
+            IsReservedFileName(name))
+        {
+            SetStatusMessage(
+                "Tên thư mục không hợp lệ.",
+                StatusMessageType.Warning);
+            return;
+        }
+
+        try
+        {
+            var newDirectory = Path.Combine(_pdfStorageDirectory, name);
+            Directory.CreateDirectory(newDirectory);
+            RefreshPdfLocations();
+            PdfLocation = name;
+            SetStatusMessage($"Đã tạo thư mục “{name}” trong thư mục mặc định.", StatusMessageType.Success);
+        }
+        catch (Exception exception) when (
+            exception is IOException or
+                UnauthorizedAccessException or
+                ArgumentException or
+                NotSupportedException or
+                System.Security.SecurityException)
+        {
+            SetStatusMessage($"Không tạo được thư mục: {exception.Message}", StatusMessageType.Error);
+        }
+    }
+
+    private void RefreshPdfLocations()
+    {
+        var selectedLocation = PdfLocation;
+        PdfLocations.Clear();
+        PdfLocations.Add("Thư mục mặc định");
+
+        if (!Directory.Exists(_pdfStorageDirectory))
+        {
+            PdfLocation = "Thư mục mặc định";
+            return;
+        }
+
+        foreach (var directory in Directory.GetDirectories(_pdfStorageDirectory))
+        {
+            PdfLocations.Add(Path.GetFileName(directory));
+        }
+
+        PdfLocation = PdfLocations.Any(location =>
+            string.Equals(location, selectedLocation, StringComparison.Ordinal))
+            ? selectedLocation
+            : "Thư mục mặc định";
     }
 
     public void MoveScanPage(ScanPageViewModel page, int targetIndex, bool insertAfter)
@@ -699,6 +817,102 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
             StatusMessageType.Success);
     }
 
+    private bool CanTransformSelectedPage() =>
+        SelectedPage is not null &&
+        !IsScanning &&
+        !IsBatchScanning &&
+        !IsSavingPdf &&
+        !IsImportingFiles;
+
+    private void RaisePageTransformCommands()
+    {
+        RotateSelectedPageLeftCommand.RaiseCanExecuteChanged();
+        RotateSelectedPageRightCommand.RaiseCanExecuteChanged();
+        FlipSelectedPageVerticalCommand.RaiseCanExecuteChanged();
+        FlipSelectedPageHorizontalCommand.RaiseCanExecuteChanged();
+    }
+
+    private void TransformSelectedPage(double angle, bool flipHorizontal, bool flipVertical)
+    {
+        var page = SelectedPage;
+        if (page is null || !CanTransformSelectedPage())
+        {
+            return;
+        }
+
+        try
+        {
+            var transformedPreview = TransformPreview(page.Preview, angle, flipHorizontal, flipVertical);
+            var transformedPage = page with { Preview = transformedPreview };
+            var index = ScanPages.IndexOf(page);
+            if (index < 0)
+            {
+                return;
+            }
+
+            ScanPages[index] = transformedPage;
+            SelectedPage = transformedPage;
+            SetStatusMessage(
+                angle != 0
+                    ? $"Đã xoay {page.Name}."
+                    : flipHorizontal
+                        ? $"Đã lật trái/phải {page.Name}."
+                        : $"Đã lật lên/xuống {page.Name}.",
+                StatusMessageType.Success);
+        }
+        catch (Exception exception) when (
+            exception is ArgumentException or
+                InvalidOperationException or
+                NotSupportedException)
+        {
+            SetStatusMessage(
+                $"Không thể chỉnh sửa {page.Name}: {exception.Message}",
+                StatusMessageType.Error);
+        }
+    }
+
+    private static BitmapSource TransformPreview(
+        BitmapSource source,
+        double angle,
+        bool flipHorizontal,
+        bool flipVertical)
+    {
+        var width = source.PixelWidth;
+        var height = source.PixelHeight;
+        var centerX = width / 2d;
+        var centerY = height / 2d;
+
+        var matrix = Matrix.Identity;
+        matrix.RotateAt(angle, centerX, centerY);
+        matrix.ScaleAt(
+            flipHorizontal ? -1 : 1,
+            flipVertical ? -1 : 1,
+            centerX,
+            centerY);
+
+        var bounds = new Rect(0, 0, width, height);
+        bounds.Transform(matrix);
+        matrix.Translate(-bounds.X, -bounds.Y);
+
+        var visual = new DrawingVisual();
+        using (var context = visual.RenderOpen())
+        {
+            context.PushTransform(new MatrixTransform(matrix));
+            context.DrawImage(source, new Rect(0, 0, width, height));
+            context.Pop();
+        }
+
+        var transformed = new RenderTargetBitmap(
+            Math.Max(1, (int)Math.Round(bounds.Width)),
+            Math.Max(1, (int)Math.Round(bounds.Height)),
+            96,
+            96,
+            PixelFormats.Pbgra32);
+        transformed.Render(visual);
+        transformed.Freeze();
+        return transformed;
+    }
+
     private bool CanSavePdf() =>
         ScanPages.Count > 0 &&
         !IsScanning &&
@@ -731,6 +945,11 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
             return;
         }
 
+        var outputDirectory = string.Equals(PdfLocation, "Thư mục mặc định", StringComparison.Ordinal)
+            ? _pdfStorageDirectory
+            : Path.Combine(_pdfStorageDirectory, PdfLocation);
+        Directory.CreateDirectory(outputDirectory);
+
         var storedFileName = fileName;
         if (_applicationSettings.AppendTimestampToPdfName)
         {
@@ -739,13 +958,13 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
                 CultureInfo.InvariantCulture);
             storedFileName = $"{fileName}_{timestamp}";
             var collision = 2;
-            while (File.Exists(Path.Combine(_pdfStorageDirectory, $"{storedFileName}.pdf")))
+            while (File.Exists(Path.Combine(outputDirectory, $"{storedFileName}.pdf")))
             {
                 storedFileName = $"{fileName}_{timestamp}_{collision++}";
             }
         }
 
-        var outputPath = Path.Combine(_pdfStorageDirectory, $"{storedFileName}.pdf");
+        var outputPath = Path.Combine(outputDirectory, $"{storedFileName}.pdf");
         if (File.Exists(outputPath))
         {
             SetStatusMessage(
@@ -756,8 +975,6 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
 
         var pages = ScanPages.ToArray();
         var pageCount = pages.Length;
-        var category = PdfCategory;
-        var tags = PdfTags;
         IsSavingPdf = true;
         string? createdPdfPath = null;
         try
@@ -765,22 +982,24 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
             SetStatusMessage("Đang tạo file PDF từ các trang đã quét...", StatusMessageType.Warning);
             var documents = (await _libraryService.LoadAsync()).ToList();
             await _pdfExportService.CreateAsync(
-                pages.Select(page => page.FilePath).ToArray(),
-                outputPath);
+                pages.Select(page => page.Preview).ToArray(),
+                outputPath,
+                SelectedPdfPageSize);
             createdPdfPath = outputPath;
 
             documents.Add(new DocumentItem
             {
                 Name = storedFileName,
                 FilePath = outputPath,
-                Category = category == "Chọn danh mục..." ? null : category,
+                Category = null,
                 PageCount = pageCount,
-                Tags = string.IsNullOrWhiteSpace(tags) ? null : tags.Trim()
+                Tags = null
             });
             await _libraryService.SaveAsync(documents);
             SetStatusMessage(
                 $"Đã lưu {storedFileName}.pdf ({pageCount} trang) và cập nhật library.json.",
                 StatusMessageType.Success);
+            PdfFileName = string.Empty;
         }
         catch (Exception exception) when (
             exception is IOException or
