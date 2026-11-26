@@ -34,6 +34,9 @@ dotnet run --project .\src\ScanApp\ScanApp.csproj
 Chế độ giả lập hiển thị hai thiết bị tên giống nhau để kiểm tra cách phân biệt
 thiết bị bằng `DeviceId`. Chọn một máy ảo rồi bấm **Quét trang** để tạo ảnh BMP
 tài liệu mẫu; ảnh được thêm vào danh sách trang và hiển thị trong vùng xem trước.
+Nút **Quét hàng loạt** khả dụng khi máy scan hỗ trợ ADF; trong lúc quét, nút
+chuyển thành **Tạm dừng** và các trang được thêm vào danh sách ngay khi quét
+xong. Chế độ giả lập quét ba trang để thử luồng này.
 Ảnh tạm nằm trong `%LocalAppData%\QuickScanManager\scans`. Dùng trường **Tên
 file PDF** để nhập tên (phần mở rộng `.pdf` được gắn cố định), sau đó bấm
 **Lưu thành PDF** để ghép các trang theo thứ tự trong danh sách. File được lưu

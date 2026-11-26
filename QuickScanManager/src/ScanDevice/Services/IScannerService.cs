@@ -11,4 +11,15 @@ public interface IScannerService
         string deviceId,
         string outputDirectory,
         CancellationToken cancellationToken = default);
+
+    Task<bool> SupportsAutomaticDocumentFeederAsync(
+        string deviceId,
+        CancellationToken cancellationToken = default);
+
+    Task<int> ScanBatchToImagesAsync(
+        string deviceId,
+        string outputDirectory,
+        ManualResetEventSlim continueSignal,
+        Action<string> onImageScanned,
+        CancellationToken cancellationToken = default);
 }

@@ -138,9 +138,11 @@ The paired XAML and code-behind files shown as `*.xaml[.cs]` are separate
   page list, and reports success/failure in the footer.
 - Scan pages can be selected, deleted, and reordered by drag-and-drop before
   export. The page list is designed to scroll within its panel.
-- A bulk-scan button is present in the UI, but batch scanning has not been
-  verified/wired as a complete workflow. Page-rotation controls are also
-  presentational until a corresponding command/behavior is implemented.
+- Batch scanning checks the selected device's ADF capability before
+  enabling the action, rechecks before starting, appends each completed page to
+  the page list, and can pause between pages. The fake scanner simulates a
+  three-page ADF batch. Page-rotation controls are still presentational until a
+  corresponding command/behavior is implemented.
 
 ### PDF export, library data, and app settings
 

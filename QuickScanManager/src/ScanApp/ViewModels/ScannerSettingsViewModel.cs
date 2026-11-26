@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Windows;
 using System.Windows.Media.Imaging;
 using ScanApp.Commands;
 using ScanApp.Models;
@@ -26,6 +27,7 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
     private readonly ScannedPdfExportService _pdfExportService;
     private readonly JsonLibraryService _libraryService;
     private readonly SemaphoreSlim _configLock = new(1, 1);
+    private readonly ManualResetEventSlim _batchContinueSignal = new(initialState: true);
     private readonly string _scanOutputDirectory = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "QuickScanManager",
@@ -43,6 +45,10 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
     private string _selectedSource = "Flatbed";
     private ScanPageViewModel? _selectedPage;
     private bool _isScanning;
+    private bool _isBatchScanning;
+    private bool _isBatchPaused;
+    private bool _isCheckingAutomaticFeeder;
+    private bool _hasAutomaticFeeder;
     private bool _isSavingPdf;
     private string _pdfFileName = string.Empty;
     private string? _pdfCategory = "Chọn danh mục...";
@@ -74,6 +80,9 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
         ScanPageCommand = new AsyncRelayCommand(
             ScanPageAsync,
             () => SelectedScanner is not null && !IsScanning && !IsSavingPdf);
+        BatchScanCommand = new RelayCommand(
+            OnBatchScanButtonClicked,
+            () => CanBatchScan);
         SavePdfCommand = new AsyncRelayCommand(SavePdfAsync, CanSavePdf);
         DeleteScanPageCommand = new RelayCommand<ScanPageViewModel>(
             DeleteScanPage,
@@ -119,6 +128,28 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
 
     public AsyncRelayCommand ScanPageCommand { get; }
 
+    public RelayCommand BatchScanCommand { get; }
+
+    public bool CanBatchScan =>
+        IsBatchScanning ||
+        (!IsScanning && !IsSavingPdf && SelectedScanner is not null && _hasAutomaticFeeder);
+
+    public bool CanChangeScanConfiguration => !IsScanning && !IsSavingPdf;
+
+    public string BatchScanButtonText =>
+        !IsBatchScanning ? "Quét hàng loạt" : IsBatchPaused ? "Tiếp tục" : "Tạm dừng";
+
+    public string BatchScanAvailabilityMessage =>
+        IsBatchScanning
+            ? IsBatchPaused
+                ? "Đã tạm dừng. Chọn Tiếp tục để quét các trang còn lại."
+                : "Tạm dừng sẽ hoàn tất trang đang quét rồi dừng."
+            : _isCheckingAutomaticFeeder
+                ? "Đang kiểm tra khả năng nạp giấy tự động..."
+                : _hasAutomaticFeeder
+                    ? "Máy scan đã chọn hỗ trợ khay nạp ADF."
+                    : "Quét hàng loạt cần máy scan có khay nạp ADF.";
+
     public RelayCommand<ScanPageViewModel> DeleteScanPageCommand { get; }
 
     public RelayCommand OpenWindowsScannerSettingsCommand { get; }
@@ -145,11 +176,15 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(ProfileButtonText));
             ApplyProfileSettings(value);
             ScanPageCommand.RaiseCanExecuteChanged();
+            OnPropertyChanged(nameof(CanBatchScan));
+            BatchScanCommand.RaiseCanExecuteChanged();
+            OnPropertyChanged(nameof(CanChangeScanConfiguration));
             AddOrEditProfileCommand.RaiseCanExecuteChanged();
             DeleteProfileCommand.RaiseCanExecuteChanged();
 
             if (!_isLoadingScanners)
             {
+                _ = RefreshAutomaticFeederSupportAsync(value?.DeviceId);
                 SetStatusMessage(
                     value is null ? "Chưa chọn máy scan." : $"Đã chọn {value.DisplayName}.",
                     value is null ? StatusMessageType.Warning : StatusMessageType.Success);
@@ -307,8 +342,47 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
 
             _isScanning = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(CanBatchScan));
+            OnPropertyChanged(nameof(CanChangeScanConfiguration));
+            BatchScanCommand.RaiseCanExecuteChanged();
             ScanPageCommand.RaiseCanExecuteChanged();
             SavePdfCommand.RaiseCanExecuteChanged();
+        }
+    }
+
+    public bool IsBatchScanning
+    {
+        get => _isBatchScanning;
+        private set
+        {
+            if (_isBatchScanning == value)
+            {
+                return;
+            }
+
+            _isBatchScanning = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(BatchScanButtonText));
+            OnPropertyChanged(nameof(BatchScanAvailabilityMessage));
+            OnPropertyChanged(nameof(CanBatchScan));
+            BatchScanCommand.RaiseCanExecuteChanged();
+        }
+    }
+
+    public bool IsBatchPaused
+    {
+        get => _isBatchPaused;
+        private set
+        {
+            if (_isBatchPaused == value)
+            {
+                return;
+            }
+
+            _isBatchPaused = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(BatchScanButtonText));
+            OnPropertyChanged(nameof(BatchScanAvailabilityMessage));
         }
     }
 
@@ -324,6 +398,9 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
 
             _isSavingPdf = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(CanBatchScan));
+            OnPropertyChanged(nameof(CanChangeScanConfiguration));
+            BatchScanCommand.RaiseCanExecuteChanged();
             SavePdfCommand.RaiseCanExecuteChanged();
             ScanPageCommand.RaiseCanExecuteChanged();
             DeleteScanPageCommand.RaiseCanExecuteChanged();
@@ -663,20 +740,7 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
                 scanner.DeviceId,
                 _scanOutputDirectory);
 
-            var preview = new BitmapImage();
-            preview.BeginInit();
-            preview.CacheOption = BitmapCacheOption.OnLoad;
-            preview.UriSource = new Uri(Path.GetFullPath(scannedImagePath));
-            preview.EndInit();
-            preview.Freeze();
-
-            var page = new ScanPageViewModel(
-                $"Trang {ScanPages.Count + 1}",
-                scannedImagePath,
-                preview);
-            ScanPages.Add(page);
-            OnPropertyChanged(nameof(ScanPageCount));
-            SavePdfCommand.RaiseCanExecuteChanged();
+            var page = AddScannedPage(scannedImagePath);
             SelectedPage = page;
             SetStatusMessage($"Đã quét xong {page.Name}.", StatusMessageType.Success);
         }
@@ -706,6 +770,175 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    private ScanPageViewModel AddScannedPage(string imagePath)
+    {
+        var preview = new BitmapImage();
+        preview.BeginInit();
+        preview.CacheOption = BitmapCacheOption.OnLoad;
+        preview.UriSource = new Uri(Path.GetFullPath(imagePath));
+        preview.EndInit();
+        preview.Freeze();
+
+        var page = new ScanPageViewModel($"Trang {ScanPages.Count + 1}", imagePath, preview);
+        ScanPages.Add(page);
+        OnPropertyChanged(nameof(ScanPageCount));
+        SavePdfCommand.RaiseCanExecuteChanged();
+        SelectedPage = page;
+        return page;
+    }
+
+    private void OnBatchScanButtonClicked()
+    {
+        if (IsBatchScanning)
+        {
+            if (IsBatchPaused)
+            {
+                _batchContinueSignal.Set();
+                IsBatchPaused = false;
+                SetStatusMessage("Đang tiếp tục quét hàng loạt...", StatusMessageType.Warning);
+            }
+            else
+            {
+                _batchContinueSignal.Reset();
+                IsBatchPaused = true;
+                SetStatusMessage(
+                    "Sẽ tạm dừng sau khi quét xong trang hiện tại.",
+                    StatusMessageType.Warning);
+            }
+
+            return;
+        }
+
+        if (CanBatchScan)
+        {
+            _ = ScanBatchAsync();
+        }
+    }
+
+    private async Task ScanBatchAsync()
+    {
+        var scanner = SelectedScanner;
+        if (scanner is null)
+        {
+            return;
+        }
+
+        IsBatchScanning = true;
+        IsBatchPaused = false;
+        _batchContinueSignal.Set();
+        IsScanning = true;
+        var scannedCount = 0;
+        try
+        {
+            SetStatusMessage(
+                $"Đang kiểm tra khay ADF của {scanner.DisplayName}...",
+                StatusMessageType.Warning);
+            var supportsFeeder =
+                await _scannerService.SupportsAutomaticDocumentFeederAsync(scanner.DeviceId);
+            if (!supportsFeeder)
+            {
+                _hasAutomaticFeeder = false;
+                OnPropertyChanged(nameof(CanBatchScan));
+                BatchScanCommand.RaiseCanExecuteChanged();
+                SetStatusMessage(
+                    "Máy scan hiện tại không hỗ trợ khay nạp tài liệu tự động (ADF).",
+                    StatusMessageType.Warning);
+                return;
+            }
+
+            _hasAutomaticFeeder = true;
+            OnPropertyChanged(nameof(CanBatchScan));
+            BatchScanCommand.RaiseCanExecuteChanged();
+            SetStatusMessage(
+                $"Đang quét hàng loạt bằng {scanner.DisplayName}...",
+                StatusMessageType.Warning);
+
+            var pageCount = await _scannerService.ScanBatchToImagesAsync(
+                scanner.DeviceId,
+                _scanOutputDirectory,
+                _batchContinueSignal,
+                imagePath => Application.Current.Dispatcher.Invoke(() =>
+                {
+                    var page = AddScannedPage(imagePath);
+                    scannedCount++;
+                    SetStatusMessage(
+                        $"Đã quét và nạp {page.Name} vào danh sách ({scannedCount} trang).",
+                        StatusMessageType.Success);
+                }));
+
+            SetStatusMessage(
+                pageCount == 0
+                    ? "Khay ADF không có giấy để quét."
+                    : $"Đã quét xong {pageCount} trang từ khay ADF.",
+                pageCount == 0 ? StatusMessageType.Warning : StatusMessageType.Success);
+        }
+        catch (Exception exception)
+        {
+            SetStatusMessage(
+                scannedCount == 0
+                    ? $"Không quét được hàng loạt: {exception.Message}"
+                    : $"Đã nạp {scannedCount} trang trước khi xảy ra lỗi: {exception.Message}",
+                StatusMessageType.Error);
+        }
+        finally
+        {
+            _batchContinueSignal.Set();
+            IsBatchPaused = false;
+            IsBatchScanning = false;
+            IsScanning = false;
+        }
+    }
+
+    private async Task RefreshAutomaticFeederSupportAsync(string? deviceId)
+    {
+        _hasAutomaticFeeder = false;
+        _isCheckingAutomaticFeeder = !string.IsNullOrWhiteSpace(deviceId);
+        OnPropertyChanged(nameof(CanBatchScan));
+        OnPropertyChanged(nameof(BatchScanAvailabilityMessage));
+        BatchScanCommand.RaiseCanExecuteChanged();
+        if (string.IsNullOrWhiteSpace(deviceId))
+        {
+            return;
+        }
+
+        try
+        {
+            var supportsFeeder =
+                await _scannerService.SupportsAutomaticDocumentFeederAsync(deviceId);
+            if (string.Equals(
+                    SelectedScanner?.DeviceId,
+                    deviceId,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                _hasAutomaticFeeder = supportsFeeder;
+            }
+        }
+        catch (Exception exception)
+        {
+            if (string.Equals(
+                    SelectedScanner?.DeviceId,
+                    deviceId,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                SetStatusMessage(
+                    $"Không kiểm tra được khả năng nạp giấy ADF của máy scan: {exception.Message}",
+                    StatusMessageType.Error);
+            }
+        }
+        finally
+        {
+            if (string.Equals(
+                    SelectedScanner?.DeviceId,
+                    deviceId,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                _isCheckingAutomaticFeeder = false;
+                OnPropertyChanged(nameof(CanBatchScan));
+                OnPropertyChanged(nameof(BatchScanAvailabilityMessage));
+                BatchScanCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
     public async Task SaveProfileAsync(ScannerProfile profile)
     {
         ArgumentNullException.ThrowIfNull(profile);
@@ -854,6 +1087,7 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
         finally
         {
             _isLoadingScanners = false;
+            _ = RefreshAutomaticFeederSupportAsync(SelectedScanner?.DeviceId);
         }
     }
 

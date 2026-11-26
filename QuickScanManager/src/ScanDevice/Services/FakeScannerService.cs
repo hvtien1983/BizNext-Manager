@@ -5,6 +5,8 @@ namespace ScanDevice.Services;
 
 public sealed class FakeScannerService : IScannerService
 {
+    private const int SimulatedBatchPageCount = 3;
+
     private static readonly IReadOnlyList<ScannerDevice> Devices =
     [
         new("SIMULATED-WIA-001", "Virtual Document Scanner"),
@@ -48,6 +50,57 @@ public sealed class FakeScannerService : IScannerService
             FileOptions.Asynchronous | FileOptions.SequentialScan);
         await WriteSampleBitmapAsync(stream, cancellationToken);
         return outputPath;
+    }
+
+    public Task<bool> SupportsAutomaticDocumentFeederAsync(
+        string deviceId,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (!Devices.Any(device =>
+                string.Equals(device.Id, deviceId, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidOperationException(
+                $"Simulated scanner '{deviceId}' is not available.");
+        }
+
+        return Task.FromResult(true);
+    }
+
+    public async Task<int> ScanBatchToImagesAsync(
+        string deviceId,
+        string outputDirectory,
+        ManualResetEventSlim continueSignal,
+        Action<string> onImageScanned,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(continueSignal);
+        ArgumentNullException.ThrowIfNull(onImageScanned);
+        if (!await SupportsAutomaticDocumentFeederAsync(deviceId, cancellationToken))
+        {
+            throw new InvalidOperationException(
+                "The simulated scanner does not support an automatic document feeder.");
+        }
+
+        var scannedCount = 0;
+        for (var index = 0; index < SimulatedBatchPageCount; index++)
+        {
+            await Task.Run(() => continueSignal.Wait(cancellationToken), cancellationToken);
+            await Task.Delay(TimeSpan.FromMilliseconds(350), cancellationToken);
+            var outputPath = await ScanToImageAsync(deviceId, outputDirectory, cancellationToken);
+            try
+            {
+                onImageScanned(outputPath);
+                scannedCount++;
+            }
+            catch
+            {
+                File.Delete(outputPath);
+                throw;
+            }
+        }
+
+        return scannedCount;
     }
 
     private static async Task WriteSampleBitmapAsync(

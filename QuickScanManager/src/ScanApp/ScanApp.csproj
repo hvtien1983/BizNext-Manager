@@ -4,6 +4,8 @@
     <ProjectReference Include="..\ScanCore\ScanCore.csproj" />
     <ProjectReference Include="..\ScanDevice\ScanDevice.csproj" />
     <Resource Include="Assets\icon.ico" />
+    <Resource Include="Assets\icon.png" />
+    <Resource Include="Assets\*.svg" />
   </ItemGroup>
 
   <PropertyGroup>

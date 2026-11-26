@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Globalization;
 using ScanDevice.Models;
 
 namespace ScanDevice.Services;
@@ -6,6 +7,13 @@ namespace ScanDevice.Services;
 public sealed class WiaScannerService : IScannerService
 {
     private const int ScannerDeviceType = 1;
+    private const int DocumentHandlingCapabilitiesPropertyId = 3086;
+    private const int DocumentHandlingStatusPropertyId = 3087;
+    private const int DocumentHandlingSelectPropertyId = 3088;
+    private const int FeederCapability = 1;
+    private const int FeederReady = 1;
+    private const int FeederSelection = 1;
+    private const int PaperEmptyError = unchecked((int)0x80210003);
     private const string BitmapFormatId = "{B96B3CAF-0728-11D3-9D7B-0000F81EF32E}";
 
     public Task<IReadOnlyList<ScannerDevice>> GetAvailableScannersAsync(
@@ -26,6 +34,56 @@ public sealed class WiaScannerService : IScannerService
 
         return RunOnStaThread(
             () => ScanToImage(deviceId, outputDirectory),
+            cancellationToken);
+    }
+
+    public Task<bool> SupportsAutomaticDocumentFeederAsync(
+        string deviceId,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(deviceId);
+        EnsureWindows();
+
+        return RunOnStaThread(() =>
+        {
+            var manager = CreateDeviceManager();
+            object? device = null;
+            try
+            {
+                device = ConnectToScanner(deviceId, manager);
+                var capabilities = Convert.ToInt32(
+                    GetDevicePropertyValue(device, DocumentHandlingCapabilitiesPropertyId),
+                    CultureInfo.InvariantCulture);
+                return (capabilities & FeederCapability) != 0;
+            }
+            finally
+            {
+                Release(device);
+                Release(manager);
+            }
+        }, cancellationToken);
+    }
+
+    public Task<int> ScanBatchToImagesAsync(
+        string deviceId,
+        string outputDirectory,
+        ManualResetEventSlim continueSignal,
+        Action<string> onImageScanned,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(deviceId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(outputDirectory);
+        ArgumentNullException.ThrowIfNull(continueSignal);
+        ArgumentNullException.ThrowIfNull(onImageScanned);
+        EnsureWindows();
+
+        return RunOnStaThread(
+            () => ScanBatchToImages(
+                deviceId,
+                outputDirectory,
+                continueSignal,
+                onImageScanned,
+                cancellationToken),
             cancellationToken);
     }
 
@@ -109,13 +167,135 @@ public sealed class WiaScannerService : IScannerService
     private static string ScanToImage(string deviceId, string outputDirectory)
     {
         var manager = CreateDeviceManager();
-        object? deviceInfos = null;
-        object? deviceInfo = null;
         object? device = null;
         object? items = null;
         object? item = null;
         object? image = null;
 
+        try
+        {
+            device = ConnectToScanner(deviceId, manager);
+            dynamic connectedDevice = device;
+            items = connectedDevice.Items;
+            dynamic deviceItems = items;
+            item = deviceItems.Item(1);
+            dynamic scanItem = item;
+            image = scanItem.Transfer(BitmapFormatId);
+
+            Directory.CreateDirectory(outputDirectory);
+            var outputPath = Path.Combine(outputDirectory, $"{Guid.NewGuid():N}.bmp");
+            dynamic transferredImage = image;
+            transferredImage.SaveFile(outputPath);
+            return outputPath;
+        }
+        finally
+        {
+            Release(image);
+            Release(item);
+            Release(items);
+            Release(device);
+            Release(manager);
+        }
+    }
+
+    private static int ScanBatchToImages(
+        string deviceId,
+        string outputDirectory,
+        ManualResetEventSlim continueSignal,
+        Action<string> onImageScanned,
+        CancellationToken cancellationToken)
+    {
+        var manager = CreateDeviceManager();
+        object? device = null;
+        object? items = null;
+        object? item = null;
+        object? selectionProperty = null;
+        try
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            device = ConnectToScanner(deviceId, manager);
+            var capabilities = Convert.ToInt32(
+                GetDevicePropertyValue(device, DocumentHandlingCapabilitiesPropertyId),
+                CultureInfo.InvariantCulture);
+            if ((capabilities & FeederCapability) == 0)
+            {
+                throw new InvalidOperationException(
+                    "Máy scan hiện tại không hỗ trợ khay nạp tài liệu tự động (ADF).");
+            }
+
+            selectionProperty = GetDeviceProperty(device, DocumentHandlingSelectPropertyId);
+            dynamic selectedProperty = selectionProperty;
+            selectedProperty.Value = FeederSelection;
+
+            dynamic connectedDevice = device;
+            items = connectedDevice.Items;
+            dynamic deviceItems = items;
+            item = deviceItems.Item(1);
+            dynamic scanItem = item;
+            Directory.CreateDirectory(outputDirectory);
+
+            var scannedCount = 0;
+            while (true)
+            {
+                continueSignal.Wait(cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var status = Convert.ToInt32(
+                    GetDevicePropertyValue(device, DocumentHandlingStatusPropertyId),
+                    CultureInfo.InvariantCulture);
+                if ((status & FeederReady) == 0)
+                {
+                    return scannedCount;
+                }
+
+                object? image = null;
+                try
+                {
+                    image = scanItem.Transfer(BitmapFormatId);
+                }
+                catch (COMException exception) when (exception.ErrorCode == PaperEmptyError)
+                {
+                    return scannedCount;
+                }
+
+                var outputPath = Path.Combine(outputDirectory, $"{Guid.NewGuid():N}.bmp");
+                try
+                {
+                    dynamic transferredImage = image;
+                    transferredImage.SaveFile(outputPath);
+                    onImageScanned(outputPath);
+                    scannedCount++;
+                }
+                catch
+                {
+                    if (File.Exists(outputPath))
+                    {
+                        File.Delete(outputPath);
+                    }
+
+                    throw;
+                }
+                finally
+                {
+                    Release(image);
+                }
+            }
+        }
+        finally
+        {
+            Release(selectionProperty);
+            Release(item);
+            Release(items);
+            Release(device);
+            Release(manager);
+        }
+    }
+
+    private static object ConnectToScanner(string deviceId, object manager)
+    {
+        object? deviceInfos = null;
+        object? deviceInfo = null;
+        object? device = null;
         try
         {
             dynamic wiaManager = manager;
@@ -152,28 +332,53 @@ public sealed class WiaScannerService : IScannerService
 
             dynamic selectedInfo = deviceInfo;
             device = selectedInfo.Connect();
-            dynamic connectedDevice = device;
-            items = connectedDevice.Items;
-            dynamic deviceItems = items;
-            item = deviceItems.Item(1);
-            dynamic scanItem = item;
-            image = scanItem.Transfer(BitmapFormatId);
-
-            Directory.CreateDirectory(outputDirectory);
-            var outputPath = Path.Combine(outputDirectory, $"{Guid.NewGuid():N}.bmp");
-            dynamic transferredImage = image;
-            transferredImage.SaveFile(outputPath);
-            return outputPath;
+            return device;
+        }
+        catch
+        {
+            Release(device);
+            throw;
         }
         finally
         {
-            Release(image);
-            Release(item);
-            Release(items);
-            Release(device);
             Release(deviceInfo);
             Release(deviceInfos);
-            Release(manager);
+        }
+    }
+
+    private static object GetDeviceProperty(object device, int propertyId)
+    {
+        object? properties = null;
+        try
+        {
+            dynamic connectedDevice = device;
+            properties = connectedDevice.Properties;
+            dynamic deviceProperties = properties;
+            return deviceProperties.Item(propertyId.ToString(CultureInfo.InvariantCulture));
+        }
+        finally
+        {
+            Release(properties);
+        }
+    }
+
+    private static object? GetDevicePropertyValue(object device, int propertyId)
+    {
+        object? properties = null;
+        object? property = null;
+        try
+        {
+            dynamic connectedDevice = device;
+            properties = connectedDevice.Properties;
+            dynamic deviceProperties = properties;
+            property = deviceProperties.Item(propertyId.ToString(CultureInfo.InvariantCulture));
+            dynamic scannerProperty = property;
+            return scannerProperty.Value;
+        }
+        finally
+        {
+            Release(property);
+            Release(properties);
         }
     }
 
