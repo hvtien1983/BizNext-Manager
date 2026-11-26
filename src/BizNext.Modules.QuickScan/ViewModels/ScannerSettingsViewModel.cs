@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using ScanApp.Commands;
-using ScanApp.Models;
-using ScanApp.Services;
+using BizNext.Modules.QuickScan.Commands;
+using BizNext.Modules.QuickScan.Models;
+using BizNext.Modules.QuickScan.Services;
 using ScanCore.Models;
 using ScanCore.Services;
 using ScanDevice.Models;
@@ -18,7 +18,7 @@ using ScanDevice.Services;
 using PDFtoImage;
 using PDFtoImage.Exceptions;
 
-namespace ScanApp.ViewModels;
+namespace BizNext.Modules.QuickScan.ViewModels;
 
 internal static class PdfPageSizeOptions
 {
@@ -668,8 +668,7 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
                     scanner.DeviceId,
                     SelectedScanner?.DeviceId,
                     StringComparison.OrdinalIgnoreCase))?.DeviceId,
-        AppendTimestampToPdfName = _applicationSettings.AppendTimestampToPdfName,
-        Theme = _applicationSettings.Theme
+        AppendTimestampToPdfName = _applicationSettings.AppendTimestampToPdfName
     };
 
     public async Task SaveApplicationSettingsAsync(ApplicationSettings settings)
@@ -682,16 +681,8 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
         {
             DefaultPdfDirectory = directory,
             DefaultScannerDeviceId = settings.DefaultScannerDeviceId,
-            AppendTimestampToPdfName = settings.AppendTimestampToPdfName,
-            Theme = settings.Theme
+            AppendTimestampToPdfName = settings.AppendTimestampToPdfName
         };
-        if (settings.Theme is not (
-                ThemePreference.Light or
-                ThemePreference.Dark or
-                ThemePreference.System))
-        {
-            throw new ArgumentOutOfRangeException(nameof(settings), "The selected theme is invalid.");
-        }
         if (savedSettings.DefaultScannerDeviceId is not null &&
             !ConfiguredScanners.Any(scanner =>
                 string.Equals(

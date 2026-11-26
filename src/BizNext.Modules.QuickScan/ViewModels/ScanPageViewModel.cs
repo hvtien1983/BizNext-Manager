@@ -1,6 +1,6 @@
 using System.Windows.Media.Imaging;
 
-namespace ScanApp.ViewModels;
+namespace BizNext.Modules.QuickScan.ViewModels;
 
 public sealed record ScanPageViewModel(
     string Name,

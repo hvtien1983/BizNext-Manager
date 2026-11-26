@@ -1,4 +1,4 @@
-namespace ScanApp.ViewModels;
+namespace BizNext.Modules.QuickScan.ViewModels;
 
 public enum StatusMessageType
 {

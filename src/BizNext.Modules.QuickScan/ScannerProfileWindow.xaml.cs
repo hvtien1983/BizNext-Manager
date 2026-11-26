@@ -2,7 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using ScanDevice.Models;
 
-namespace ScanApp;
+namespace BizNext.Modules.QuickScan;
 
 public partial class ScannerProfileWindow : Window
 {

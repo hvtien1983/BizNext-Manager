@@ -13,9 +13,11 @@ dependencies of the applications.
 ├── ui-component-patterns/
 │   ├── SKILL.md
 │   └── references/component-guidelines.md
-└── ui-platform-adaptation/
-    ├── SKILL.md
-    └── references/platform-mapping.md
+├── ui-platform-adaptation/
+│   ├── SKILL.md
+│   └── references/platform-mapping.md
+└── wpf/
+    └── SKILL.md
 ```
 
 ## Skills
@@ -26,6 +28,8 @@ dependencies of the applications.
   accessibility expectations.
 - **ui-platform-adaptation** — applying the shared design language to different
   UI frameworks and packaged applications.
+- **wpf** — WPF/XAML, bindings, MVVM, resource dictionaries, threading, and
+  runtime validation for Windows desktop UI.
 
 `ui-design-system/assets/design-tokens.json` is the machine-readable source for
 the initial shared tokens. Keep semantic token names stable across platforms;

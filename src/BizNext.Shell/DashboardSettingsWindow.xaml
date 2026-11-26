@@ -1,0 +1,110 @@
+<Window x:Class="BizNext.Shell.DashboardSettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:contracts="clr-namespace:BizNext.Contracts.Models;assembly=BizNext.Contracts"
+        Title="Cài đặt BizNext Manager"
+        Width="520"
+        Height="510"
+        MinWidth="480"
+        MinHeight="480"
+        ResizeMode="CanResize"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource SurfaceCanvasBrush}"
+        FontFamily="Segoe UI"
+        Foreground="{DynamicResource TextPrimaryBrush}"
+        Icon="pack://application:,,,/BizNext.Modules.QuickScan;component/Assets/icon.ico">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel>
+            <TextBlock Text="Cài đặt Dashboard"
+                       FontSize="20"
+                       FontWeight="Bold" />
+            <TextBlock Text="Tùy chỉnh giao diện chung cho BizNext Manager và các tiện ích."
+                       Margin="0,5,0,0"
+                       FontSize="{StaticResource CompactControlFontSize}"
+                       Foreground="{DynamicResource TextMutedBrush}"
+                       TextWrapping="Wrap" />
+        </StackPanel>
+
+        <Border Grid.Row="1"
+                Margin="0,20,0,20"
+                Padding="18"
+                Style="{StaticResource SectionCard}">
+            <StackPanel>
+                <TextBlock Text="GIAO DIỆN"
+                           Style="{StaticResource FieldLabel}" />
+                <TextBlock Text="Chủ đề này áp dụng cho Dashboard và mọi tiện ích."
+                           Margin="0,0,0,10"
+                           FontSize="{StaticResource CompactCaptionFontSize}"
+                           Foreground="{DynamicResource TextMutedBrush}"
+                           TextWrapping="Wrap" />
+
+                <RadioButton x:Name="LightThemeOption"
+                             GroupName="ThemePreference"
+                             Tag="{x:Static contracts:ThemePreference.Light}"
+                             Style="{StaticResource SettingsThemeOption}"
+                             AutomationProperties.Name="Giao diện Màu sáng">
+                    <StackPanel>
+                        <TextBlock Text="Màu sáng"
+                                   FontSize="{StaticResource CompactControlFontSize}"
+                                   FontWeight="SemiBold" />
+                        <TextBlock Text="Giao diện sáng, tương phản rõ."
+                                   Margin="0,3,0,0"
+                                   FontSize="{StaticResource CompactCaptionFontSize}"
+                                   Foreground="{DynamicResource TextMutedBrush}" />
+                    </StackPanel>
+                </RadioButton>
+                <RadioButton x:Name="DarkThemeOption"
+                             GroupName="ThemePreference"
+                             Tag="{x:Static contracts:ThemePreference.Dark}"
+                             Style="{StaticResource SettingsThemeOption}"
+                             AutomationProperties.Name="Giao diện Màu tối">
+                    <StackPanel>
+                        <TextBlock Text="Màu tối"
+                                   FontSize="{StaticResource CompactControlFontSize}"
+                                   FontWeight="SemiBold" />
+                        <TextBlock Text="Giảm độ sáng nền trong môi trường thiếu sáng."
+                                   Margin="0,3,0,0"
+                                   FontSize="{StaticResource CompactCaptionFontSize}"
+                                   Foreground="{DynamicResource TextMutedBrush}" />
+                    </StackPanel>
+                </RadioButton>
+                <RadioButton x:Name="SystemThemeOption"
+                             GroupName="ThemePreference"
+                             Tag="{x:Static contracts:ThemePreference.System}"
+                             Style="{StaticResource SettingsThemeOption}"
+                             AutomationProperties.Name="Giao diện Theo Windows">
+                    <StackPanel>
+                        <TextBlock Text="Theo Windows"
+                                   FontSize="{StaticResource CompactControlFontSize}"
+                                   FontWeight="SemiBold" />
+                        <TextBlock Text="Tự dùng chế độ sáng hoặc tối theo cài đặt Windows."
+                                   Margin="0,3,0,0"
+                                   FontSize="{StaticResource CompactCaptionFontSize}"
+                                   Foreground="{DynamicResource TextMutedBrush}" />
+                    </StackPanel>
+                </RadioButton>
+            </StackPanel>
+        </Border>
+
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+            <Button Content="Hủy"
+                    Style="{StaticResource SecondaryButton}"
+                    MinWidth="90"
+                    Margin="0,0,8,0"
+                    IsCancel="True" />
+            <Button Content="Lưu cài đặt"
+                    Style="{StaticResource PrimaryButton}"
+                    MinWidth="110"
+                    IsDefault="True"
+                    Click="SaveSettings_Click" />
+        </StackPanel>
+    </Grid>
+</Window>

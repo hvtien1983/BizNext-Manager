@@ -1,10 +1,42 @@
-# BizNext-PdfScanManager
-Phần mềm Scan văn bản, hình ảnh. Chuyển đổi định dạng tập tin thành PDF. Quản lý tập tin PDF.
+# BizNext Manager
 
-Solution khởi tạo nằm trong [QuickScanManager](./QuickScanManager/README.md).
+BizNext Manager là ứng dụng Dashboard WPF đa tiện ích trên Windows. Các tiện
+ích được đóng gói thành module riêng; hiện có **QuickScan** để quét tài liệu,
+tạo PDF và quản lý thư viện. **Ghi chú** và **Lịch & Thời tiết** đã có module
+khung để phát triển tiếp.
 
-Các skill UI dùng chung cho Agent AI trong workspace được quản lý tại
-[.github/skills](./.github/skills/README.md).
+## Build và chạy
 
-Trong VS Code, nhấn `F5` và chọn cấu hình **QuickScanManager (WPF, giả lập
-scanner)** để chạy/debug mà không cần máy scan thật.
+Yêu cầu .NET 10 SDK trên Windows:
+
+```powershell
+dotnet build .\BizNext-Manager.sln
+dotnet run --project .\src\BizNext.Shell\BizNext.Shell.csproj
+```
+
+Trong VS Code, nhấn `F5` và chọn **BizNext Manager (WPF, giả lập scanner)**
+để chạy QuickScan mà không cần máy scan thật. Chọn cấu hình scanner thật khi
+có thiết bị WIA tương thích.
+
+QuickScan giữ dữ liệu người dùng hiện có tại
+`%LocalAppData%\QuickScanManager\`; việc nâng cấp không di chuyển/xóa dữ liệu
+PDF, cấu hình máy scan hay thiết lập cũ.
+
+Đổi giao diện Sáng/Tối/Theo Windows từ nút **Cài đặt** ở cuối sidebar.
+
+## Kiến trúc
+
+- `BizNext.Contracts`: hợp đồng và metadata chung của module.
+- `BizNext.Infrastructure`: danh mục/điều hướng module, cài đặt Shell và lưu
+  JSON nguyên tử.
+- `BizNext.Shell`: entry point, Dashboard, theme và host các module.
+- `BizNext.Modules.QuickScan`: giao diện UserControl và nghiệp vụ QuickScan.
+- `BizNext.Modules.Notes`, `BizNext.Modules.WeatherCalendar`: khung module mở
+  rộng trong tương lai.
+- `ScanCore`, `ScanDevice`: thư viện hỗ trợ hiện tại của QuickScan, tách PDF/
+  metadata khỏi truy cập WIA.
+
+Xem [docs/architecture.md](./docs/architecture.md) để biết luồng module và
+quy ước mở rộng. Hướng dẫn UI dùng chung nằm tại
+[.github/skills](./.github/skills/README.md), bao gồm hướng dẫn WPF tại
+[.github/skills/wpf/SKILL.md](./.github/skills/wpf/SKILL.md).

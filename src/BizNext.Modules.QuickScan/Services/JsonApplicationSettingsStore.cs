@@ -1,12 +1,15 @@
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using ScanApp.Models;
+using BizNext.Infrastructure.Storage;
+using BizNext.Modules.QuickScan.Models;
 
-namespace ScanApp.Services;
+namespace BizNext.Modules.QuickScan.Services;
 
 public sealed class JsonApplicationSettingsStore(string settingsPath)
 {
+    private readonly JsonFileStorage _storage = new();
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         WriteIndented = true,
@@ -16,19 +19,13 @@ public sealed class JsonApplicationSettingsStore(string settingsPath)
 
     public async Task<ApplicationSettings> LoadAsync(CancellationToken cancellationToken = default)
     {
-        if (!File.Exists(settingsPath))
-        {
-            return new ApplicationSettings();
-        }
-
         try
         {
-            await using var stream = File.OpenRead(settingsPath);
-            return await JsonSerializer.DeserializeAsync<ApplicationSettings>(
-                       stream,
-                       JsonOptions,
-                       cancellationToken)
-                   ?? throw new InvalidDataException("Application settings are empty.");
+            return await _storage.ReadAsync(
+                settingsPath,
+                new ApplicationSettings(),
+                JsonOptions,
+                cancellationToken);
         }
         catch (JsonException exception)
         {
@@ -43,34 +40,6 @@ public sealed class JsonApplicationSettingsStore(string settingsPath)
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(settings);
-        var fullPath = Path.GetFullPath(settingsPath);
-        var directory = Path.GetDirectoryName(fullPath)
-            ?? throw new ArgumentException("The settings path must include a directory.", nameof(settingsPath));
-        Directory.CreateDirectory(directory);
-
-        var temporaryPath = Path.Combine(directory, $".{Path.GetFileName(fullPath)}.{Guid.NewGuid():N}.tmp");
-        try
-        {
-            await using (var stream = new FileStream(
-                             temporaryPath,
-                             FileMode.CreateNew,
-                             FileAccess.Write,
-                             FileShare.None,
-                             bufferSize: 4096,
-                             useAsync: true))
-            {
-                await JsonSerializer.SerializeAsync(stream, settings, JsonOptions, cancellationToken);
-                await stream.FlushAsync(cancellationToken);
-            }
-
-            File.Move(temporaryPath, fullPath, overwrite: true);
-        }
-        finally
-        {
-            if (File.Exists(temporaryPath))
-            {
-                File.Delete(temporaryPath);
-            }
-        }
+        await _storage.WriteAtomicallyAsync(settingsPath, settings, JsonOptions, cancellationToken);
     }
 }

@@ -1,4 +1,4 @@
-<Window x:Class="ScanApp.CreatePdfFolderWindow"
+<Window x:Class="BizNext.Modules.QuickScan.CreatePdfFolderWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Tạo thư mục lưu PDF"

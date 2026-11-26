@@ -7,7 +7,7 @@ native resource/theme system and avoid defining a competing palette.
 
 ## Initial visual foundation
 
-The starter values are aligned with the current QuickScanManager WPF UI:
+The starter values are aligned with the current BizNext Manager WPF UI:
 
 | Role | Token | Value |
 |---|---|---|
@@ -27,8 +27,8 @@ passes accessibility contrast. Check foreground/background pairs in context.
 ## Dark theme
 
 The shared dark semantic palette is in `color.themes.dark` in the token JSON.
-The QuickScanManager WPF adapter maps those roles in
-`QuickScanManager/src/ScanApp/Themes/DarkTheme.xaml`; the existing light
+The BizNext Manager WPF adapter maps those roles in
+`src/BizNext.Shell/Themes/DarkTheme.xaml`; the existing light
 palette remains the default adapter and fallback when a Windows app-theme
 preference cannot be read.
 
@@ -64,6 +64,6 @@ Map the tokens into each app's normal theme mechanism, for example WPF
 catalog. The JSON file is the shared source; generated or handwritten platform
 resources are adapters and should be traceable to it.
 
-The QuickScanManager WPF adapter lives in
-`QuickScanManager/src/ScanApp/Themes/DesignTokens.xaml` and is merged from
+The BizNext Manager WPF adapter lives in
+`src/BizNext.Shell/Themes/DesignTokens.xaml` and is merged from the Shell
 `App.xaml`.

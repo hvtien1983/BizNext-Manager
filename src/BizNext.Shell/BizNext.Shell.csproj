@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\BizNext.Contracts\BizNext.Contracts.csproj" />
+    <ProjectReference Include="..\BizNext.Infrastructure\BizNext.Infrastructure.csproj" />
+    <ProjectReference Include="..\BizNext.Modules.Notes\BizNext.Modules.Notes.csproj" />
+    <ProjectReference Include="..\BizNext.Modules.QuickScan\BizNext.Modules.QuickScan.csproj" />
+    <ProjectReference Include="..\BizNext.Modules.WeatherCalendar\BizNext.Modules.WeatherCalendar.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>..\BizNext.Modules.QuickScan\Assets\icon.ico</ApplicationIcon>
+  </PropertyGroup>
+</Project>

@@ -1,4 +1,7 @@
-namespace ScanApp.Models;
+using System.Text.Json.Serialization;
+using BizNext.Contracts.Models;
+
+namespace BizNext.Modules.QuickScan.Models;
 
 public sealed class ApplicationSettings
 {
@@ -8,5 +11,8 @@ public sealed class ApplicationSettings
 
     public bool AppendTimestampToPdfName { get; set; } = true;
 
-    public ThemePreference Theme { get; set; } = ThemePreference.Light;
+    // Legacy value kept only so the Shell can migrate an existing theme choice once.
+    // The Shell owns theming now; this property is never written back.
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ThemePreference? Theme { get; set; }
 }

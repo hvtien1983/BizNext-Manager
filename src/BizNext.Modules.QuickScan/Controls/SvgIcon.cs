@@ -7,7 +7,7 @@ using System.Windows.Media;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace ScanApp.Controls;
+namespace BizNext.Modules.QuickScan.Controls;
 
 public sealed class SvgIcon : FrameworkElement
 {
@@ -100,7 +100,7 @@ public sealed class SvgIcon : FrameworkElement
         }
 
         var resourceUri = new Uri(
-            $"pack://application:,,,/ScanApp;component/{assetPath.ToLowerInvariant()}",
+            $"pack://application:,,,/BizNext.Modules.QuickScan;component/{assetPath.ToLowerInvariant()}",
             UriKind.Absolute);
         var resource = Application.GetResourceStream(resourceUri)
             ?? throw new FileNotFoundException($"SVG resource was not found: {source}");

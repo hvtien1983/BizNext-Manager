@@ -1,4 +1,4 @@
-<Window x:Class="ScanApp.ScannerProfileWindow"
+<Window x:Class="BizNext.Modules.QuickScan.ScannerProfileWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Cấu hình máy scan"

@@ -2,27 +2,27 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using ScanApp.Services;
-using ScanApp.ViewModels;
+using BizNext.Modules.QuickScan.Services;
+using BizNext.Modules.QuickScan.ViewModels;
 using ScanCore.Services;
 using ScanDevice.Models;
 using ScanDevice.Services;
 using System.IO;
-using ScanApp.Models;
+using BizNext.Modules.QuickScan.Models;
 using Microsoft.Win32;
 
-namespace ScanApp;
+namespace BizNext.Modules.QuickScan;
 
-public partial class MainWindow : Window
+public partial class QuickScanView : UserControl
 {
-    private const string ScanPageDataFormat = "QuickScanManager.ScanPage";
+    private const string ScanPageDataFormat = "BizNext.Modules.QuickScan.ScanPage";
 
     private readonly ScannerSettingsViewModel _scannerViewModel;
     private bool _initialized;
     private Point _pageDragStart;
     private ScanPageViewModel? _pageBeingDragged;
 
-    public MainWindow(ApplicationSettings applicationSettings, string? settingsLoadError)
+    public QuickScanView(ApplicationSettings applicationSettings, string? settingsLoadError)
     {
         ArgumentNullException.ThrowIfNull(applicationSettings);
         InitializeComponent();
@@ -61,8 +61,12 @@ public partial class MainWindow : Window
         _scannerViewModel.ProfileEditRequested += EditScannerProfile;
         _scannerViewModel.ProfileDeleteRequested += DeleteScannerProfile;
         DataContext = _scannerViewModel;
-        Loaded += MainWindow_Loaded;
+        Loaded += QuickScanView_Loaded;
     }
+
+    private Window OwnerWindow =>
+        Window.GetWindow(this)
+        ?? throw new InvalidOperationException("The QuickScan module is not hosted in a window.");
 
     private async void OpenAppSettings_Click(object sender, RoutedEventArgs e)
     {
@@ -70,7 +74,7 @@ public partial class MainWindow : Window
             _scannerViewModel.GetApplicationSettingsCopy(),
             _scannerViewModel.ConfiguredScanners)
         {
-            Owner = this
+            Owner = OwnerWindow
         };
         if (dialog.ShowDialog() != true || dialog.Settings is null)
         {
@@ -80,7 +84,6 @@ public partial class MainWindow : Window
         try
         {
             await _scannerViewModel.SaveApplicationSettingsAsync(dialog.Settings);
-            App.ApplyTheme(dialog.Settings.Theme);
         }
         catch (Exception exception) when (
             exception is IOException or
@@ -90,7 +93,7 @@ public partial class MainWindow : Window
                 System.Security.SecurityException)
         {
             MessageBox.Show(
-                this,
+                OwnerWindow,
                 $"Không lưu được cài đặt ứng dụng. {exception.Message}",
                 "Lỗi lưu cài đặt",
                 MessageBoxButton.OK,
@@ -98,7 +101,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
+    private async void QuickScanView_Loaded(object sender, RoutedEventArgs e)
     {
         if (_initialized)
         {
@@ -118,7 +121,7 @@ public partial class MainWindow : Window
             Filter = "Ảnh và PDF|*.jpg;*.jpeg;*.png;*.bmp;*.tif;*.tiff;*.pdf|Ảnh|*.jpg;*.jpeg;*.png;*.bmp;*.tif;*.tiff|PDF|*.pdf"
         };
 
-        if (dialog.ShowDialog(this) != true || dialog.FileNames.Length == 0)
+        if (dialog.ShowDialog(OwnerWindow) != true || dialog.FileNames.Length == 0)
         {
             return;
         }
@@ -130,7 +133,7 @@ public partial class MainWindow : Window
     {
         var dialog = new CreatePdfFolderWindow
         {
-            Owner = this
+            Owner = OwnerWindow
         };
         if (dialog.ShowDialog() == true)
         {
@@ -151,7 +154,7 @@ public partial class MainWindow : Window
             scanner.DeviceName,
             existingProfile)
         {
-            Owner = this
+            Owner = OwnerWindow
         };
 
         if (dialog.ShowDialog() != true)
@@ -166,7 +169,7 @@ public partial class MainWindow : Window
         catch (Exception exception)
         {
             MessageBox.Show(
-                this,
+                OwnerWindow,
                 $"Không lưu được cấu hình máy scan. {exception.Message}",
                 "Lỗi lưu cấu hình",
                 MessageBoxButton.OK,
@@ -183,7 +186,7 @@ public partial class MainWindow : Window
         }
 
         var result = MessageBox.Show(
-            this,
+            OwnerWindow,
             $"Xóa bí danh “{profile.Alias}” khỏi ứng dụng? Thiết bị vẫn được cài trong Windows.",
             "Xóa bí danh máy scan",
             MessageBoxButton.YesNo,
@@ -200,17 +203,12 @@ public partial class MainWindow : Window
         catch (Exception exception)
         {
             MessageBox.Show(
-                this,
+                OwnerWindow,
                 $"Không xóa được bí danh máy scan. {exception.Message}",
                 "Lỗi cập nhật cấu hình",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }
-    }
-
-    private void TabControl_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-    {
-
     }
 
     private void ScanPageList_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)

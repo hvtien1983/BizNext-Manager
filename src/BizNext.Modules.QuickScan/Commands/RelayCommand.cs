@@ -1,6 +1,6 @@
 using System.Windows.Input;
 
-namespace ScanApp.Commands;
+namespace BizNext.Modules.QuickScan.Commands;
 
 public sealed class RelayCommand(Action execute, Func<bool>? canExecute = null) : ICommand
 {

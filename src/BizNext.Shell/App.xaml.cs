@@ -1,12 +1,20 @@
 ﻿using System.Diagnostics;
 using System.IO;
 using System.Security;
+using System.Text.Json;
 using System.Windows;
 using Microsoft.Win32;
-using ScanApp.Models;
-using ScanApp.Services;
+using BizNext.Contracts;
+using BizNext.Contracts.Models;
+using BizNext.Infrastructure.Settings;
+using BizNext.Infrastructure.Storage;
+using BizNext.Modules.Notes;
+using BizNext.Modules.QuickScan;
+using BizNext.Modules.WeatherCalendar;
+using BizNext.Modules.QuickScan.Models;
+using BizNext.Modules.QuickScan.Services;
 
-namespace ScanApp;
+namespace BizNext.Shell;
 
 public partial class App : Application
 {
@@ -41,8 +49,49 @@ public partial class App : Application
                 $"Không đọc được cài đặt ứng dụng. Đang dùng giá trị mặc định; hãy kiểm tra app-settings.json. {exception.Message}";
         }
 
-        ApplyTheme(settings.Theme);
-        var mainWindow = new MainWindow(settings, settingsLoadError);
+        var shellSettingsStore = new ShellSettingsStore(
+            Path.Combine(localAppData, "BizNext-Manager", "shell-settings.json"),
+            new JsonFileStorage());
+        var shellSettings = new ShellSettings();
+        string? shellSettingsLoadError = null;
+        try
+        {
+            shellSettings = await shellSettingsStore.LoadAsync();
+        }
+        catch (Exception exception) when (
+            exception is JsonException or InvalidDataException or IOException or UnauthorizedAccessException)
+        {
+            shellSettingsLoadError =
+                $"Không đọc được cài đặt BizNext Manager. Dashboard sẽ dùng cài đặt mặc định. {exception.Message}";
+        }
+
+        // The Shell owns theming; adopt a theme saved by an earlier QuickScan-only version once.
+        if (shellSettings.Theme is null)
+        {
+            shellSettings.Theme = settings.Theme ?? ThemePreference.Light;
+            if (shellSettingsLoadError is null)
+            {
+                try
+                {
+                    await shellSettingsStore.SaveAsync(shellSettings);
+                }
+                catch (Exception exception) when (
+                    exception is IOException or UnauthorizedAccessException)
+                {
+                    Trace.TraceWarning($"Could not persist the migrated theme preference. {exception}");
+                }
+            }
+        }
+
+        ApplyTheme(shellSettings.Theme.Value);
+
+        var moduleList = new IBizNextModule[]
+        {
+            new QuickScanModule(settings, settingsLoadError),
+            new NotesModule(),
+            new WeatherCalendarModule()
+        };
+        var mainWindow = new MainWindow(moduleList, shellSettingsStore, shellSettings, shellSettingsLoadError);
         MainWindow = mainWindow;
         mainWindow.Show();
     }
@@ -60,8 +109,8 @@ public partial class App : Application
         {
             Source = new Uri(
                 useDarkTheme
-                    ? "/ScanApp;component/Themes/DarkTheme.xaml"
-                    : "/ScanApp;component/Themes/DesignTokens.xaml",
+                    ? "/BizNext.Shell;component/Themes/DarkTheme.xaml"
+                    : "/BizNext.Shell;component/Themes/DesignTokens.xaml",
                 UriKind.Relative)
         };
 

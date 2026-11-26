@@ -2,19 +2,19 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "build QuickScanManager",
+      "label": "build BizNext Manager",
       "type": "process",
       "command": "dotnet",
       "args": [
         "build",
-        "${workspaceFolder}\\QuickScanManager\\QuickScanManager.sln",
+        "${workspaceFolder}\\BizNext-Manager.sln",
         "--configuration",
         "Debug",
         "--verbosity",
         "minimal"
       ],
       "options": {
-        "cwd": "${workspaceFolder}\\QuickScanManager"
+        "cwd": "${workspaceFolder}"
       },
       "problemMatcher": "$msCompile",
       "group": {

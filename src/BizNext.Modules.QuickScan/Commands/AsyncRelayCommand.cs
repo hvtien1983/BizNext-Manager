@@ -1,6 +1,6 @@
 using System.Windows.Input;
 
-namespace ScanApp.Commands;
+namespace BizNext.Modules.QuickScan.Commands;
 
 public sealed class AsyncRelayCommand(
     Func<Task> execute,

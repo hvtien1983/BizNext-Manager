@@ -1,6 +1,6 @@
 using System.Windows;
 
-namespace ScanApp;
+namespace BizNext.Modules.QuickScan;
 
 public partial class CreatePdfFolderWindow : Window
 {

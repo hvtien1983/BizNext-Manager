@@ -2,29 +2,29 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "QuickScanManager (WPF, giả lập scanner)",
+      "name": "BizNext Manager (WPF, giả lập scanner)",
       "type": "coreclr",
       "request": "launch",
-      "program": "${workspaceFolder}\\QuickScanManager\\src\\ScanApp\\bin\\Debug\\net10.0-windows\\ScanApp.dll",
+      "program": "${workspaceFolder}\\src\\BizNext.Shell\\bin\\Debug\\net10.0-windows\\BizNext.Shell.dll",
       "args": [],
-      "cwd": "${workspaceFolder}\\QuickScanManager\\src\\ScanApp",
+      "cwd": "${workspaceFolder}",
       "console": "internalConsole",
       "stopAtEntry": false,
-      "preLaunchTask": "build QuickScanManager",
+      "preLaunchTask": "build BizNext Manager",
       "env": {
         "QUICKSCAN_USE_FAKE_SCANNER": "1"
       }
     },
     {
-      "name": "QuickScanManager (WPF, scanner thật)",
+      "name": "BizNext Manager (WPF, scanner thật)",
       "type": "coreclr",
       "request": "launch",
-      "program": "${workspaceFolder}\\QuickScanManager\\src\\ScanApp\\bin\\Debug\\net10.0-windows\\ScanApp.dll",
+      "program": "${workspaceFolder}\\src\\BizNext.Shell\\bin\\Debug\\net10.0-windows\\BizNext.Shell.dll",
       "args": [],
-      "cwd": "${workspaceFolder}\\QuickScanManager\\src\\ScanApp",
+      "cwd": "${workspaceFolder}",
       "console": "internalConsole",
       "stopAtEntry": false,
-      "preLaunchTask": "build QuickScanManager"
+      "preLaunchTask": "build BizNext Manager"
     }
   ]
 }
