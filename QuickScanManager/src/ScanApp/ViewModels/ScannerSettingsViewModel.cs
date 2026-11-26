@@ -14,6 +14,8 @@ using ScanCore.Models;
 using ScanCore.Services;
 using ScanDevice.Models;
 using ScanDevice.Services;
+using PDFtoImage;
+using PDFtoImage.Exceptions;
 
 namespace ScanApp.ViewModels;
 
@@ -50,6 +52,7 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
     private bool _isCheckingAutomaticFeeder;
     private bool _hasAutomaticFeeder;
     private bool _isSavingPdf;
+    private bool _isImportingFiles;
     private string _pdfFileName = string.Empty;
     private string? _pdfCategory = "Chọn danh mục...";
     private string _pdfTags = string.Empty;
@@ -79,7 +82,7 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
 
         ScanPageCommand = new AsyncRelayCommand(
             ScanPageAsync,
-            () => SelectedScanner is not null && !IsScanning && !IsSavingPdf);
+            () => SelectedScanner is not null && !IsScanning && !IsSavingPdf && !IsImportingFiles);
         BatchScanCommand = new RelayCommand(
             OnBatchScanButtonClicked,
             () => CanBatchScan);
@@ -132,9 +135,9 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
 
     public bool CanBatchScan =>
         IsBatchScanning ||
-        (!IsScanning && !IsSavingPdf && SelectedScanner is not null && _hasAutomaticFeeder);
+        (!IsScanning && !IsSavingPdf && !IsImportingFiles && SelectedScanner is not null && _hasAutomaticFeeder);
 
-    public bool CanChangeScanConfiguration => !IsScanning && !IsSavingPdf;
+    public bool CanChangeScanConfiguration => !IsScanning && !IsSavingPdf && !IsImportingFiles;
 
     public string BatchScanButtonText =>
         !IsBatchScanning ? "Quét hàng loạt" : IsBatchPaused ? "Tiếp tục" : "Tạm dừng";
@@ -157,6 +160,137 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
     public RelayCommand AddOrEditProfileCommand { get; }
 
     public RelayCommand DeleteProfileCommand { get; }
+
+    public async Task ImportFilesAsync(IReadOnlyList<string> filePaths)
+    {
+        ArgumentNullException.ThrowIfNull(filePaths);
+        if (filePaths.Count == 0 || IsScanning || IsSavingPdf || IsImportingFiles)
+        {
+            return;
+        }
+
+        IsImportingFiles = true;
+        try
+        {
+            Directory.CreateDirectory(_scanOutputDirectory);
+            var importedCount = 0;
+            var failedFiles = new List<string>();
+
+            foreach (var sourcePath in filePaths)
+            {
+                try
+                {
+                    var extension = Path.GetExtension(sourcePath);
+                    if (extension.Equals(".pdf", StringComparison.OrdinalIgnoreCase))
+                    {
+                        importedCount += await ImportPdfAsync(sourcePath);
+                    }
+                    else if (IsSupportedImageExtension(extension))
+                    {
+                        var destinationPath = Path.Combine(
+                            _scanOutputDirectory,
+                            $"{Guid.NewGuid():N}{extension.ToLowerInvariant()}");
+                        await using (var source = File.OpenRead(sourcePath))
+                        await using (var destination = File.Create(destinationPath))
+                        {
+                            await source.CopyToAsync(destination);
+                        }
+
+                        AddScannedPage(destinationPath);
+                        importedCount++;
+                    }
+                    else
+                    {
+                        failedFiles.Add($"{Path.GetFileName(sourcePath)} (định dạng không được hỗ trợ)");
+                    }
+                }
+                catch (Exception exception) when (
+                    exception is IOException or
+                        UnauthorizedAccessException or
+                        ArgumentException or
+                        InvalidDataException or
+                        NotSupportedException or
+                        FileFormatException or
+                        System.Security.SecurityException or
+                        PdfException)
+                {
+                    failedFiles.Add($"{Path.GetFileName(sourcePath)} ({exception.Message})");
+                }
+            }
+
+            OnPropertyChanged(nameof(ScanPageCount));
+            SavePdfCommand.RaiseCanExecuteChanged();
+
+            if (failedFiles.Count == 0)
+            {
+                SetStatusMessage(
+                    $"Đã nạp {importedCount} trang từ file đã chọn.",
+                    StatusMessageType.Success);
+            }
+            else
+            {
+                SetStatusMessage(
+                    $"Đã nạp {importedCount} trang. Không nhập được: {string.Join("; ", failedFiles)}",
+                    StatusMessageType.Warning);
+            }
+        }
+        finally
+        {
+            IsImportingFiles = false;
+        }
+    }
+
+    private async Task<int> ImportPdfAsync(string pdfPath)
+    {
+        await using var pdfStream = File.OpenRead(pdfPath);
+        var pageCount = await Task.Run(() =>
+            Conversion.GetPageCount(pdfStream, leaveOpen: true, password: null));
+        if (pageCount == 0)
+        {
+            throw new InvalidDataException("File PDF không có trang.");
+        }
+
+        var importedCount = 0;
+        var renderOptions = new RenderOptions
+        {
+            Dpi = 300,
+            WithAspectRatio = true,
+            BackgroundColor = SkiaSharp.SKColors.White
+        };
+
+        for (var pageIndex = 0; pageIndex < pageCount; pageIndex++)
+        {
+            var destinationPath = Path.Combine(
+                _scanOutputDirectory,
+                $"{Guid.NewGuid():N}.png");
+
+            await Task.Run(() =>
+            {
+                pdfStream.Position = 0;
+                using var output = File.Create(destinationPath);
+                Conversion.SavePng(
+                    imageStream: output,
+                    pdfStream: pdfStream,
+                    page: pageIndex,
+                    leaveOpen: true,
+                    password: null,
+                    options: renderOptions);
+            });
+
+            AddScannedPage(destinationPath);
+            importedCount++;
+        }
+
+        return importedCount;
+    }
+
+    private static bool IsSupportedImageExtension(string extension) =>
+        extension.Equals(".jpg", StringComparison.OrdinalIgnoreCase) ||
+        extension.Equals(".jpeg", StringComparison.OrdinalIgnoreCase) ||
+        extension.Equals(".png", StringComparison.OrdinalIgnoreCase) ||
+        extension.Equals(".bmp", StringComparison.OrdinalIgnoreCase) ||
+        extension.Equals(".tif", StringComparison.OrdinalIgnoreCase) ||
+        extension.Equals(".tiff", StringComparison.OrdinalIgnoreCase);
 
     public ScannerOption? SelectedScanner
     {
@@ -407,6 +541,26 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool IsImportingFiles
+    {
+        get => _isImportingFiles;
+        private set
+        {
+            if (_isImportingFiles == value)
+            {
+                return;
+            }
+
+            _isImportingFiles = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(CanBatchScan));
+            OnPropertyChanged(nameof(CanChangeScanConfiguration));
+            BatchScanCommand.RaiseCanExecuteChanged();
+            SavePdfCommand.RaiseCanExecuteChanged();
+            ScanPageCommand.RaiseCanExecuteChanged();
+        }
+    }
+
     public AsyncRelayCommand SavePdfCommand { get; }
 
     public async Task InitializeAsync()
@@ -549,6 +703,7 @@ public sealed class ScannerSettingsViewModel : INotifyPropertyChanged
         ScanPages.Count > 0 &&
         !IsScanning &&
         !IsSavingPdf &&
+        !IsImportingFiles &&
         !string.IsNullOrWhiteSpace(PdfFileName);
 
     private async Task SavePdfAsync()

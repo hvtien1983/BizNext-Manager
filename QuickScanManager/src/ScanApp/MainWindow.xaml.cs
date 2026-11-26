@@ -9,6 +9,7 @@ using ScanDevice.Models;
 using ScanDevice.Services;
 using System.IO;
 using ScanApp.Models;
+using Microsoft.Win32;
 
 namespace ScanApp;
 
@@ -106,6 +107,23 @@ public partial class MainWindow : Window
 
         _initialized = true;
         await _scannerViewModel.InitializeAsync();
+    }
+
+    private async void AddFiles_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog
+        {
+            Title = "Chọn ảnh hoặc file PDF",
+            Multiselect = true,
+            Filter = "Ảnh và PDF|*.jpg;*.jpeg;*.png;*.bmp;*.tif;*.tiff;*.pdf|Ảnh|*.jpg;*.jpeg;*.png;*.bmp;*.tif;*.tiff|PDF|*.pdf"
+        };
+
+        if (dialog.ShowDialog(this) != true || dialog.FileNames.Length == 0)
+        {
+            return;
+        }
+
+        await _scannerViewModel.ImportFilesAsync(dialog.FileNames);
     }
 
     private async void EditScannerProfile(ScannerProfile? existingProfile)

@@ -36,7 +36,9 @@ thiết bị bằng `DeviceId`. Chọn một máy ảo rồi bấm **Quét trang
 tài liệu mẫu; ảnh được thêm vào danh sách trang và hiển thị trong vùng xem trước.
 Nút **Quét hàng loạt** khả dụng khi máy scan hỗ trợ ADF; trong lúc quét, nút
 chuyển thành **Tạm dừng** và các trang được thêm vào danh sách ngay khi quét
-xong. Chế độ giả lập quét ba trang để thử luồng này.
+xong. Chế độ giả lập quét ba trang để thử luồng này. Nút **Thêm ảnh / PDF** nằm
+dưới nút quét hàng loạt; nhấp nút sẽ mở cửa sổ chọn nhiều file, nạp ảnh hoặc
+render từng trang PDF vào danh sách trang.
 Ảnh tạm nằm trong `%LocalAppData%\QuickScanManager\scans`. Dùng trường **Tên
 file PDF** để nhập tên (phần mở rộng `.pdf` được gắn cố định), sau đó bấm
 **Lưu thành PDF** để ghép các trang theo thứ tự trong danh sách. File được lưu

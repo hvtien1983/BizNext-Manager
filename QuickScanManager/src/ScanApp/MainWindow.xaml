@@ -262,6 +262,20 @@
                                                 <TextBlock Text="{Binding BatchScanButtonText}" />
                                             </StackPanel>
                                         </Button>
+                                        <Button Style="{StaticResource SecondaryButton}"
+                                                Margin="0,6,0,0"
+                                                Click="AddFiles_Click"
+                                                IsEnabled="{Binding CanChangeScanConfiguration}"
+                                                AutomationProperties.Name="Thêm ảnh hoặc PDF">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="+"
+                                                           FontSize="16"
+                                                           FontWeight="Bold"
+                                                           Margin="0,0,8,0"
+                                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                                <TextBlock Text="Thêm ảnh / PDF" />
+                                            </StackPanel>
+                                        </Button>
                                         <TextBlock Text="{Binding BatchScanAvailabilityMessage}"
                                                    Margin="0,7,0,0"
                                                    FontSize="{StaticResource CompactCaptionFontSize}"
@@ -361,11 +375,6 @@
                                                        FontSize="{StaticResource CompactCaptionFontSize}"
                                                        Foreground="{DynamicResource TextMutedBrush}"
                                                        HorizontalAlignment="Center" />
-                                            <Button Content="+   Thêm ảnh / PDF"
-                                                    Style="{StaticResource PrimaryButton}"
-                                                    Margin="0,12,0,0"
-                                                    IsEnabled="False"
-                                                    AutomationProperties.Name="Thêm ảnh hoặc PDF (chưa khả dụng)" />
                                             <TextBlock Text="Hỗ trợ PDF, JPG, PNG"
                                                        Margin="0,6,0,0"
                                                        FontSize="{StaticResource CompactCaptionFontSize}"

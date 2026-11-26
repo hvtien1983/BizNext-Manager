@@ -136,6 +136,9 @@ The paired XAML and code-behind files shown as `*.xaml[.cs]` are separate
   generate a sample BMP page through the same `IScannerService` contract.
 - **Quét trang** scans to a local temporary image, shows it in the preview and
   page list, and reports success/failure in the footer.
+- The **Thêm ảnh / PDF** button sits below the batch-scan action and opens a
+  multi-file selection dialog. Supported image files are copied into local scan
+  storage; each PDF is rendered into PNG pages and appended to the page list.
 - Scan pages can be selected, deleted, and reordered by drag-and-drop before
   export. The page list is designed to scroll within its panel.
 - Batch scanning checks the selected device's ADF capability before

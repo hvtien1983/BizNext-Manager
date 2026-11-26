@@ -8,6 +8,10 @@
     <Resource Include="Assets\*.svg" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="PDFtoImage" Version="5.4.0" />
+  </ItemGroup>
+
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
