@@ -6,6 +6,7 @@ using System.Windows;
 using Microsoft.Win32;
 using BizNext.Contracts;
 using BizNext.Contracts.Models;
+using BizNext.DesignSystem.Utils;
 using BizNext.Infrastructure.Settings;
 using BizNext.Infrastructure.Storage;
 using BizNext.Modules.Notes;
@@ -105,16 +106,8 @@ public partial class App : Application
             ThemePreference.System => IsSystemUsingDarkTheme(),
             _ => throw new ArgumentOutOfRangeException(nameof(preference), preference, null)
         };
-        var themeDictionary = new ResourceDictionary
-        {
-            Source = new Uri(
-                useDarkTheme
-                    ? "/BizNext.Shell;component/Themes/DarkTheme.xaml"
-                    : "/BizNext.Shell;component/Themes/DesignTokens.xaml",
-                UriKind.Relative)
-        };
 
-        Current.Resources.MergedDictionaries[0] = themeDictionary;
+        ThemeManager.SetTheme(useDarkTheme ? AppTheme.Dark : AppTheme.Light);
     }
 
     private static bool IsSystemUsingDarkTheme()
