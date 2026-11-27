@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <ProjectReference Include="..\BizNext.DesignSystem\BizNext.DesignSystem.csproj" />
     <ProjectReference Include="..\BizNext.Contracts\BizNext.Contracts.csproj" />
     <ProjectReference Include="..\BizNext.Infrastructure\BizNext.Infrastructure.csproj" />
     <ProjectReference Include="..\BizNext.Modules.Notes\BizNext.Modules.Notes.csproj" />

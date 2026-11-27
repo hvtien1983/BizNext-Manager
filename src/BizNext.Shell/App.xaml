@@ -4,8 +4,11 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Themes/DesignTokens.xaml" />
-                <ResourceDictionary Source="Themes/ControlStyles.xaml" />
+                <!-- Load BizNext.DesignSystem resources (includes themes, tokens, styles) -->
+                <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/App.xaml" />
+
+                <!-- Shell-specific resources -->
+                <ResourceDictionary Source="Themes/ShellSpecific.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
