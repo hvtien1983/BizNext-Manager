@@ -1,0 +1,87 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- NAVIGATION MENU ITEM [F2: Fluent 2 navigation sidebar item] -->
+    <!-- Typically used in a vertical StackPanel sidebar for main app navigation -->
+    <Style x:Key="Fluent.NavigationMenu.Item" TargetType="RadioButton">
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="12,10" />
+        <Setter Property="Margin" Value="4,2" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="FontSize" Value="{StaticResource CompactControlFontSize}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Border x:Name="ItemBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{StaticResource ControlCornerRadius}"
+                            Padding="{TemplateBinding Padding}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <!-- Icon + label (content) -->
+                            <ContentPresenter Grid.Column="0"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Left"
+                                              RecognizesAccessKey="True" />
+                        </Grid>
+                    </Border>
+
+                    <ControlTemplate.Triggers>
+                        <!-- Hover -->
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="ItemBorder"
+                                    Property="Background"
+                                    Value="{DynamicResource SurfaceHoverBrush}" />
+                        </Trigger>
+
+                        <!-- Selected -->
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="ItemBorder"
+                                    Property="Background"
+                                    Value="{DynamicResource SurfaceSelectedBrush}" />
+                            <Setter TargetName="ItemBorder"
+                                    Property="BorderBrush"
+                                    Value="{DynamicResource ActionPrimaryBrush}" />
+                            <Setter TargetName="ItemBorder"
+                                    Property="BorderThickness"
+                                    Value="2,0,0,0" />
+                            <Setter Property="Foreground"
+                                    Value="{DynamicResource ActionPrimaryBrush}" />
+                        </Trigger>
+
+                        <!-- Keyboard focused -->
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="ItemBorder"
+                                    Property="BorderBrush"
+                                    Value="{DynamicResource BorderFocusBrush}" />
+                            <Setter TargetName="ItemBorder"
+                                    Property="BorderThickness"
+                                    Value="2" />
+                        </Trigger>
+
+                        <!-- Disabled -->
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="ItemBorder"
+                                    Property="Opacity"
+                                    Value="0.48" />
+                            <Setter Property="Foreground"
+                                    Value="{DynamicResource TextMutedBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

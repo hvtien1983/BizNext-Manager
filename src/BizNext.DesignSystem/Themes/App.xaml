@@ -8,9 +8,26 @@
         <!-- 2. Light Theme (Default) -->
         <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/LightTheme.xaml" />
 
-        <!-- 3. Shared Styles -->
-        <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/ButtonStyles.xaml" />
+        <!-- 3. Shared Styles - Input Controls -->
+        <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/CheckBoxRadioStyles.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/SelectionStyles.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/ToggleSwitchStyles.xaml" />
         <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/InputStyles.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/PasswordBoxStyles.xaml" />
+
+        <!-- 4. Shared Styles - Containers & Layout -->
+        <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/TabControlStyles.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/DialogStyles.xaml" />
+
+        <!-- 5. Shared Styles - Display & Feedback -->
+        <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/TooltipProgressStyles.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/StatusIndicatorStyles.xaml" />
+
+        <!-- 6. Shared Styles - Navigation -->
+        <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/NavigationMenuStyles.xaml" />
+
+        <!-- 7. Shared Styles - Buttons & Cards -->
+        <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/ButtonVariantStyles.xaml" />
         <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/CardStyles.xaml" />
         <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/DataGridStyles.xaml" />
     </ResourceDictionary.MergedDictionaries>

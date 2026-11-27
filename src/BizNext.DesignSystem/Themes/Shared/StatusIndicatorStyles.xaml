@@ -1,0 +1,53 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- STATUS INDICATOR - SUCCESS [F2: Fluent 2 status badge] -->
+    <Style x:Key="Fluent.StatusIndicator.Success" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource SurfaceSuccessBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource TextSuccessBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+        <Setter Property="Padding" Value="8,6" />
+    </Style>
+
+    <!-- STATUS INDICATOR - WARNING -->
+    <Style x:Key="Fluent.StatusIndicator.Warning" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource SurfaceWarningBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource TextWarningBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+        <Setter Property="Padding" Value="8,6" />
+    </Style>
+
+    <!-- STATUS INDICATOR - ERROR -->
+    <Style x:Key="Fluent.StatusIndicator.Error" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource SurfaceDefaultBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource TextDangerBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+        <Setter Property="Padding" Value="8,6" />
+    </Style>
+
+    <!-- STATUS INDICATOR TEXT (for use inside Status Indicator borders) -->
+    <Style x:Key="Fluent.StatusText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource CompactCaptionFontSize}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- STATUS TEXT - SUCCESS (use with Fluent.StatusIndicator.Success) -->
+    <Style x:Key="Fluent.StatusText.Success" TargetType="TextBlock" BasedOn="{StaticResource Fluent.StatusText}">
+        <Setter Property="Foreground" Value="{DynamicResource TextSuccessBrush}" />
+    </Style>
+
+    <!-- STATUS TEXT - WARNING -->
+    <Style x:Key="Fluent.StatusText.Warning" TargetType="TextBlock" BasedOn="{StaticResource Fluent.StatusText}">
+        <Setter Property="Foreground" Value="{DynamicResource TextWarningBrush}" />
+    </Style>
+
+    <!-- STATUS TEXT - ERROR -->
+    <Style x:Key="Fluent.StatusText.Error" TargetType="TextBlock" BasedOn="{StaticResource Fluent.StatusText}">
+        <Setter Property="Foreground" Value="{DynamicResource TextDangerBrush}" />
+    </Style>
+
+</ResourceDictionary>
