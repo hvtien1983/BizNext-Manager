@@ -7,7 +7,7 @@ compatibility: "Requires a WPF project on .NET or .NET Framework."
 # WPF
 
 Use this skill for WPF UI, MVVM, XAML, data binding, commands, custom styles,
-control templates, and Windows desktop modernization.
+control templates, visual design integration, and Windows desktop modernization.
 
 ## Workflow
 
@@ -24,12 +24,18 @@ control templates, and Windows desktop modernization.
 5. Centralize reusable styles and templates in resource dictionaries. Reuse
    semantic design tokens and `DynamicResource` for values that change with the
    active theme. Keep module-only styles with their owning module.
-6. Preserve keyboard navigation, focus visuals, UI Automation names, and
-   accessible selected/disabled/error states when customizing controls.
-7. Use `async`/`await` for I/O and long-running operations. WPF continuations
+6. Apply visual design standards from [`ui-design-system`](../ui-design-system/SKILL.md)
+   and implement them in XAML using semantic tokens, ResourceDictionaries, and
+   ControlTemplates. Refer to [`wpf-visual-design`](../wpf-visual-design/SKILL.md)
+   for WPF-specific implementation patterns.
+7. For interaction states, accessibility, and keyboard navigation, follow
+   [`wpf-ux-standards`](../wpf-ux-standards/SKILL.md). Preserve UI Automation
+   names, focus visuals, and accessible selected/disabled/error states when
+   customizing controls.
+8. Use `async`/`await` for I/O and long-running operations. WPF continuations
    normally return to the dispatcher; explicitly dispatch only when work has
    moved off the UI thread.
-8. Validate XAML at runtime as well as building: run the application, visit
+9. Validate XAML at runtime as well as building: run the application, visit
    changed views/dialogs, and check light and dark themes at compact and normal
    window sizes.
 
@@ -44,8 +50,9 @@ control templates, and Windows desktop modernization.
   focus, automation, and text-scaling behavior. Customize its template only
   when the existing visual system requires it, and retain the control's
   interaction states.
-- Follow `ui-design-system` for semantic tokens and
-  `ui-component-patterns` for reusable control states.
+- Follow `ui-design-system` for semantic tokens,
+  `ui-component-patterns` for reusable control states, and
+  `wpf-visual-design` for XAML implementation details.
 
 ## References
 
