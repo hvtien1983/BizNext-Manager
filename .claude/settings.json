@@ -1,0 +1,52 @@
+{
+  "version": "0.1.0",
+
+  "project-name": "BizNext-PdfScanManager",
+
+  "agent-preferences": {
+    "primary-agent": "TaskExecutor",
+    "search-agent": "Explore",
+    "build-agent": "BuildValidator",
+    "reasoning-effort": "medium"
+  },
+
+  "cost-optimization": {
+    "mode": "auto",
+    "enable-fork-agents": true,
+    "enable-parallel-execution": true,
+    "cache-results": true,
+    "cleanup-context": true
+  },
+
+  "tool-allowlist": [
+    "search",
+    "read",
+    "edit",
+    "write",
+    "execute",
+    "bash"
+  ],
+
+  "auto-behaviors": {
+    "auto-fork-on-search": {
+      "enabled": true,
+      "threshold": "exploratory-task"
+    },
+    "auto-background-execution": {
+      "enabled": true,
+      "applies-to": ["build", "test", "long-running"]
+    },
+    "auto-parallel-agents": {
+      "enabled": true,
+      "max-parallel": 3
+    }
+  },
+
+  "task-routing": {
+    "csharp-code": "TaskExecutor",
+    "xaml-files": "TaskExecutor",
+    "search-files": "Explore",
+    "build-test": "BuildValidator",
+    "code-quality": "IntegrityReviewer"
+  }
+}
