@@ -12,104 +12,6 @@
         FontFamily="Segoe UI"
         Foreground="{DynamicResource TextPrimaryBrush}"
         Icon="Assets/icon.ico">
-    <Window.Resources>
-        <Style x:Key="DialogLabel" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="{StaticResource CompactLabelFontSize}" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
-            <Setter Property="Margin" Value="0,0,0,5" />
-        </Style>
-        <Style x:Key="DialogComboBox" TargetType="ComboBox">
-            <Setter Property="Height" Value="{StaticResource CompactControlHeight}" />
-            <Setter Property="Padding" Value="9,5" />
-            <Setter Property="FontSize" Value="{StaticResource CompactControlFontSize}" />
-            <Setter Property="Background" Value="{DynamicResource SurfaceDefaultBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderDefaultBrush}" />
-            <Style.Triggers>
-                <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                    <Setter Property="BorderBrush" Value="{DynamicResource BorderFocusBrush}" />
-                </Trigger>
-                <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Opacity" Value="0.55" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-        <Style x:Key="DialogTextBox" TargetType="TextBox">
-            <Setter Property="Height" Value="{StaticResource CompactControlHeight}" />
-            <Setter Property="Padding" Value="9,0" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="FontSize" Value="{StaticResource CompactControlFontSize}" />
-            <Setter Property="Background" Value="{DynamicResource SurfaceDefaultBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderDefaultBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
-                        <Border x:Name="InputBorder"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="{StaticResource ControlCornerRadius}">
-                            <ScrollViewer x:Name="PART_ContentHost"
-                                          Margin="{TemplateBinding Padding}"
-                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="InputBorder"
-                                        Property="BorderBrush"
-                                        Value="{DynamicResource BorderFocusBrush}" />
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="InputBorder" Property="Opacity" Value="0.55" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        <Style x:Key="DialogButton" TargetType="Button">
-            <Setter Property="Height" Value="{StaticResource CompactPrimaryButtonHeight}" />
-            <Setter Property="Padding" Value="14,0" />
-            <Setter Property="FontSize" Value="{StaticResource CompactControlFontSize}" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="DialogButtonBorder"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="{StaticResource ControlCornerRadius}">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"
-                                              Margin="{TemplateBinding Padding}"
-                                              RecognizesAccessKey="True" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="DialogButtonBorder"
-                                        Property="BorderBrush"
-                                        Value="{DynamicResource BorderDefaultBrush}" />
-                            </Trigger>
-                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="DialogButtonBorder"
-                                        Property="BorderBrush"
-                                        Value="{DynamicResource BorderFocusBrush}" />
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="DialogButtonBorder" Property="Opacity" Value="0.5" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    </Window.Resources>
-
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -128,33 +30,33 @@
         </StackPanel>
 
         <StackPanel Grid.Row="1" Margin="0,16,0,0">
-            <TextBlock Text="TÊN GỢI NHỚ" Style="{StaticResource DialogLabel}" />
+            <TextBlock Text="TÊN GỢI NHỚ" Style="{StaticResource FieldLabel}" />
             <TextBox x:Name="AliasTextBox"
-                     Style="{StaticResource DialogTextBox}"
+                     Style="{StaticResource InputTextBox}"
                      ToolTip="Ví dụ: Máy scan phòng kế toán" />
 
             <TextBlock Text="CHẾ ĐỘ MÀU"
-                       Style="{StaticResource DialogLabel}"
+                       Style="{StaticResource FieldLabel}"
                        Margin="0,12,0,5" />
-            <ComboBox x:Name="ColorModeComboBox" Style="{StaticResource DialogComboBox}">
+            <ComboBox x:Name="ColorModeComboBox" Style="{StaticResource Fluent.ComboBox}">
                 <ComboBoxItem Content="Color" Tag="Color" />
                 <ComboBoxItem Content="Grayscale" Tag="Grayscale" />
                 <ComboBoxItem Content="BlackWhite" Tag="BlackWhite" />
             </ComboBox>
 
             <TextBlock Text="ĐỘ PHÂN GIẢI"
-                       Style="{StaticResource DialogLabel}"
+                       Style="{StaticResource FieldLabel}"
                        Margin="0,12,0,5" />
-            <ComboBox x:Name="ResolutionComboBox" Style="{StaticResource DialogComboBox}">
+            <ComboBox x:Name="ResolutionComboBox" Style="{StaticResource Fluent.ComboBox}">
                 <ComboBoxItem Content="150 DPI" Tag="150" />
                 <ComboBoxItem Content="200 DPI" Tag="200" />
                 <ComboBoxItem Content="300 DPI" Tag="300" />
             </ComboBox>
 
             <TextBlock Text="NGUỒN NẠP"
-                       Style="{StaticResource DialogLabel}"
+                       Style="{StaticResource FieldLabel}"
                        Margin="0,12,0,5" />
-            <ComboBox x:Name="SourceComboBox" Style="{StaticResource DialogComboBox}">
+            <ComboBox x:Name="SourceComboBox" Style="{StaticResource Fluent.ComboBox}">
                 <ComboBoxItem Content="Mặt kính" Tag="Flatbed" />
                 <ComboBoxItem Content="Khay nạp ADF" Tag="Feeder" />
             </ComboBox>
@@ -171,17 +73,14 @@
                     HorizontalAlignment="Right">
             <Button Content="Hủy"
                     IsCancel="True"
-                    Style="{StaticResource DialogButton}"
+                    Style="{StaticResource Fluent.Button.Secondary}"
                     Margin="0,0,8,0"
-                    Background="{DynamicResource SurfaceDefaultBrush}"
-                    BorderBrush="{DynamicResource BorderDefaultBrush}" />
+                    MinWidth="90" />
             <Button Content="Lưu bí danh"
                     IsDefault="True"
                     Click="Save_Click"
-                    Style="{StaticResource DialogButton}"
-                    Background="{DynamicResource ActionPrimaryBrush}"
-                    Foreground="{DynamicResource TextOnPrimaryBrush}"
-                    BorderThickness="0" />
+                    Style="{StaticResource Fluent.Button.Primary}"
+                    MinWidth="110" />
         </StackPanel>
     </Grid>
 </Window>

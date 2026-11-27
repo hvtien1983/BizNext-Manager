@@ -48,7 +48,7 @@
                              AutomationProperties.Name="Thư mục lưu PDF mặc định" />
                     <Button Grid.Column="2"
                             Content="Chọn thư mục..."
-                            Style="{StaticResource SecondaryButton}"
+                            Style="{StaticResource Fluent.Button.Secondary}"
                             Click="BrowsePdfDirectory_Click" />
                 </Grid>
                 <TextBlock Text="File PDF mới sẽ được lưu vào thư mục này."
@@ -60,7 +60,7 @@
                            Style="{StaticResource FieldLabel}"
                            Margin="0,20,0,5" />
                 <ComboBox x:Name="DefaultScannerComboBox"
-                          Style="{StaticResource InputComboBox}"
+                          Style="{StaticResource Fluent.ComboBox}"
                           DisplayMemberPath="DisplayName"
                           SelectedValuePath="DeviceId"
                           AutomationProperties.Name="Máy scan mặc định" />
@@ -88,12 +88,12 @@
                     Orientation="Horizontal"
                     HorizontalAlignment="Right">
             <Button Content="Hủy"
-                    Style="{StaticResource SecondaryButton}"
+                    Style="{StaticResource Fluent.Button.Secondary}"
                     MinWidth="90"
                     Margin="0,0,8,0"
                     IsCancel="True" />
             <Button Content="Lưu cài đặt"
-                    Style="{StaticResource PrimaryButton}"
+                    Style="{StaticResource Fluent.Button.Primary}"
                     MinWidth="110"
                     IsDefault="True"
                     Click="SaveSettings_Click" />

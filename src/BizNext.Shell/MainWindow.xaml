@@ -10,7 +10,7 @@
         FontFamily="Segoe UI"
         Foreground="{DynamicResource TextPrimaryBrush}"
         WindowStartupLocation="CenterScreen"
-        Icon="pack://application:,,,/BizNext.Modules.QuickScan;component/Assets/icon.ico">
+        Icon="Assets/icon.ico">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="236" />

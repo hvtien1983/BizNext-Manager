@@ -92,24 +92,29 @@ configuration.
 
 ## UI and theming
 
-The Shell owns the application's look and feel and provides it to every module
-through the application resources:
+The Shell owns the application's theme choice and loads the shared WPF design
+system into application resources. The design system is the single source for
+reusable UI styles and controls used by the Dashboard and hosted modules:
 
-- **Tokens and themes**: `src/BizNext.Shell/Themes/DesignTokens.xaml` (light)
-  and `DarkTheme.xaml`. The source design tokens remain under
-  `.github/skills/ui-design-system/`; these WPF dictionaries are adapters, not
-  a second token authority.
-- **Shared controls and styles**: `Themes/ControlStyles.xaml` (cards, labels,
-  inputs, buttons, navigation tabs, status-bar button, data grid, ...). Modules
-  should reuse these keys instead of redefining them.
+- **Tokens, themes, and shared controls**: `src/BizNext.DesignSystem/Themes/`
+  and `src/BizNext.DesignSystem/Components/`. Shared styles are grouped under
+  `Themes/Shared/` and merged by `Themes/App.xaml`. These WPF resources adapt
+  the platform-neutral design tokens documented under
+  `.github/skills/ui-design-system/`; they are not a second token authority.
+- **Module UI ownership**: modules own their view composition, commands,
+  feature behavior, and feature assets. They reference shared styles and
+  controls from `BizNext.DesignSystem`; they do not define local visual styles,
+  reusable controls, components, or theme dictionaries.
+- **Window icon**: every new WPF window must set `Icon="Assets/icon.ico"` and
+  ensure the standard icon asset is available to its project.
+- **Shell-only styles**: `src/BizNext.Shell/Themes/` may contain styles that
+  implement Dashboard-only behavior, such as the theme-selection option. Common
+  buttons, cards, labels, inputs, and data-grid styles belong in DesignSystem.
 - **Theme choice**: Dashboard settings (opened from the bottom of the sidebar)
   has the only theme selector (Light, Dark, System). The choice is stored in
   `shell-settings.json` and applied by `App.ApplyTheme` at startup and on save.
   Modules must not expose their own theme setting and must reference brushes
   with `DynamicResource` so they follow theme changes.
-- **Module-specific styles** stay in the module. QuickScan keeps its scan-only
-  styles in `Themes/QuickScanStyles.xaml`, merged into `QuickScanView`. Shared
-  Shell dictionaries must not reference module types.
 - A module's root view should not repeat the Dashboard title; the Shell header
   shows the module name and description. Module-level settings are opened from
   the module's own status bar (QuickScan: **Cài đặt**, bottom-right).

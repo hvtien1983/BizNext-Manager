@@ -12,7 +12,7 @@
         Background="{DynamicResource SurfaceCanvasBrush}"
         FontFamily="Segoe UI"
         Foreground="{DynamicResource TextPrimaryBrush}"
-        Icon="pack://application:,,,/BizNext.Modules.QuickScan;component/Assets/icon.ico">
+        Icon="Assets/icon.ico">
     <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -96,12 +96,12 @@
                     Orientation="Horizontal"
                     HorizontalAlignment="Right">
             <Button Content="Hủy"
-                    Style="{StaticResource SecondaryButton}"
+                    Style="{StaticResource Fluent.Button.Secondary}"
                     MinWidth="90"
                     Margin="0,0,8,0"
                     IsCancel="True" />
             <Button Content="Lưu cài đặt"
-                    Style="{StaticResource PrimaryButton}"
+                    Style="{StaticResource Fluent.Button.Primary}"
                     MinWidth="110"
                     IsDefault="True"
                     Click="SaveSettings_Click" />

@@ -45,13 +45,13 @@
                             VerticalAlignment="Center">
                     <Button x:Name="PreviousPageButton"
                             Content="← Trang trước"
-                            Style="{StaticResource SecondaryButton}"
+                            Style="{StaticResource Fluent.Button.Secondary}"
                             Margin="0,0,8,0"
                             IsEnabled="False"
                             Click="PreviousPage_Click" />
                     <Button x:Name="NextPageButton"
                             Content="Trang sau →"
-                            Style="{StaticResource SecondaryButton}"
+                            Style="{StaticResource Fluent.Button.Secondary}"
                             IsEnabled="False"
                             Click="NextPage_Click" />
                 </StackPanel>

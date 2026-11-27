@@ -1,5 +1,8 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:converters="clr-namespace:BizNext.DesignSystem.Converters">
+
+    <converters:EnumToStringConverter x:Key="EnumToStringConverter" />
 
     <!-- STATUS INDICATOR - SUCCESS [F2: Fluent 2 status badge] -->
     <Style x:Key="Fluent.StatusIndicator.Success" TargetType="Border">
@@ -48,6 +51,21 @@
     <!-- STATUS TEXT - ERROR -->
     <Style x:Key="Fluent.StatusText.Error" TargetType="TextBlock" BasedOn="{StaticResource Fluent.StatusText}">
         <Setter Property="Foreground" Value="{DynamicResource TextDangerBrush}" />
+    </Style>
+
+    <Style x:Key="Fluent.StatusText.Dynamic" TargetType="TextBlock" BasedOn="{StaticResource Fluent.StatusText}">
+        <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+        <Style.Triggers>
+            <Trigger Property="Tag" Value="Success">
+                <Setter Property="Foreground" Value="{DynamicResource TextSuccessBrush}" />
+            </Trigger>
+            <Trigger Property="Tag" Value="Warning">
+                <Setter Property="Foreground" Value="{DynamicResource TextWarningBrush}" />
+            </Trigger>
+            <Trigger Property="Tag" Value="Error">
+                <Setter Property="Foreground" Value="{DynamicResource TextDangerBrush}" />
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
 </ResourceDictionary>

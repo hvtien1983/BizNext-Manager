@@ -421,6 +421,15 @@ public partial class QuickScanView : UserControl
         LibraryGrid.SelectedItem = row.Item;
     }
 
+    private void LibraryGrid_LoadingRow(object sender, DataGridRowEventArgs e)
+    {
+        e.Row.ContextMenu = e.Row.Item is PdfLibraryEntry { IsFolder: false }
+            ? (ContextMenu)FindResource("PdfLibraryContextMenu")
+            : null;
+        e.Row.ContextMenuOpening -= LibraryGridRow_ContextMenuOpening;
+        e.Row.ContextMenuOpening += LibraryGridRow_ContextMenuOpening;
+    }
+
     private void QuickViewPdf_Click(object sender, RoutedEventArgs e)
     {
         if (GetContextMenuEntry(sender) is { } entry)

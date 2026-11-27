@@ -3,7 +3,7 @@
 > Living handoff for future development. Update this document when architecture,
 > user-visible behavior, or project status changes.
 >
-> Last updated: 2026-11-27 (Phase 8 - XAML Compatibility & Agent Config)
+> Last updated: 2026-11-27 (Shared DesignSystem ownership)
 
 ## Project overview
 
@@ -18,6 +18,7 @@ placeholders.
 BizNext-Manager.sln
 src/
 ├── BizNext.Contracts/                 # IBizNextModule and shared metadata
+├── BizNext.DesignSystem/              # Shared WPF tokens, themes, styles, controls
 ├── BizNext.Infrastructure/            # Module catalog/navigation, JSON storage
 ├── BizNext.Modules.QuickScan/         # QuickScan UserControl and workflows
 ├── BizNext.Modules.Notes/              # Future Notes utility
@@ -47,12 +48,17 @@ QuickScan module; they are not dashboard modules.
   (the Shell header names the module); its **Cài đặt** button sits at the right
   of its status bar, and its settings dialog no longer contains a theme option.
   Its modal dialogs use the host window as owner.
-- The Shell owns theming: **Cài đặt** at the bottom of the sidebar opens
+- The Shell owns theme selection: **Cài đặt** at the bottom of the sidebar opens
   Dashboard settings, where the global theme is selected and stored in
-  `shell-settings.json`. Shared tokens/themes/control styles in
-  `src/BizNext.Shell/Themes/` are provided to all modules (adapting the
-  semantic source tokens in `.github/skills/ui-design-system/`). QuickScan-only
-  styles live in the module (`Themes/QuickScanStyles.xaml`).
+  `shell-settings.json`. Shared WPF tokens, themes, styles, and reusable
+  controls are provided by `src/BizNext.DesignSystem/` and loaded into
+  application resources by the Shell. Modules reference these shared resources
+  and do not define local styles, reusable controls, components, or theme
+  dictionaries. Modules continue to own their views, feature behavior, and
+  feature-specific assets.
+- Every new WPF window must use the standard application icon with
+  `Icon="Assets/icon.ico"`; ensure that asset is available to the window's
+  project.
 
 See [docs/architecture.md](./docs/architecture.md) for lifecycle, project
 dependencies, and extension instructions.
@@ -72,7 +78,8 @@ dependencies, and extension instructions.
 
 **Token System**: Semantic design tokens for colors, typography, spacing, corner radius
 - Files: `DesignTokens.xaml`, `LightTheme.xaml`, `DarkTheme.xaml`
-- Used by: ButtonStyles, CardStyles, InputStyles, DialogStyles, etc.
+- Used by: ButtonStyles, CardStyles, InputStyles, DialogStyles, DataGridStyles,
+  and shared WPF components.
 
 **WPF Compatibility**: ✅ Fully compatible (Phase 8 fixes applied)
 - Removed WinUI 3 attributes (Gap, Radius on Rectangle)

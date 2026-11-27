@@ -7,7 +7,7 @@ using System.Windows.Media;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace BizNext.Modules.QuickScan.Controls;
+namespace BizNext.DesignSystem.Components;
 
 public sealed class SvgIcon : FrameworkElement
 {
@@ -93,15 +93,24 @@ public sealed class SvgIcon : FrameworkElement
 
     private static SvgDocument LoadDocument(string source)
     {
-        var assetPath = source.Replace('\\', '/').TrimStart('/');
-        if (assetPath.Contains("..", StringComparison.Ordinal))
+        Uri resourceUri;
+        if (source.StartsWith("pack://application:,,,/", StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidDataException($"Invalid SVG resource path: {source}");
+            resourceUri = new Uri(source, UriKind.Absolute);
+        }
+        else
+        {
+            var assetPath = source.Replace('\\', '/').TrimStart('/');
+            if (assetPath.Contains("..", StringComparison.Ordinal))
+            {
+                throw new InvalidDataException($"Invalid SVG resource path: {source}");
+            }
+
+            resourceUri = new Uri(
+                $"pack://application:,,,/BizNext.DesignSystem;component/{assetPath.ToLowerInvariant()}",
+                UriKind.Absolute);
         }
 
-        var resourceUri = new Uri(
-            $"pack://application:,,,/BizNext.Modules.QuickScan;component/{assetPath.ToLowerInvariant()}",
-            UriKind.Absolute);
         var resource = Application.GetResourceStream(resourceUri)
             ?? throw new FileNotFoundException($"SVG resource was not found: {source}");
 

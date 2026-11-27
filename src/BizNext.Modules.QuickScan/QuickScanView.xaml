@@ -3,38 +3,32 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:vm="clr-namespace:BizNext.Modules.QuickScan.ViewModels"
-        xmlns:controls="clr-namespace:BizNext.Modules.QuickScan.Controls"
+        xmlns:controls="clr-namespace:BizNext.DesignSystem.Components;assembly=BizNext.DesignSystem"
         mc:Ignorable="d"
         Background="{DynamicResource SurfaceCanvasBrush}"
         FontFamily="Segoe UI"
         Foreground="{DynamicResource TextPrimaryBrush}">
     <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Themes/QuickScanStyles.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-            <ContextMenu x:Key="PdfLibraryContextMenu"
-                         DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"
-                         Background="{DynamicResource SurfaceDefaultBrush}"
-                         BorderBrush="{DynamicResource BorderSubtleBrush}"
-                         Foreground="{DynamicResource TextPrimaryBrush}">
-                <ContextMenu.Resources>
-                    <Style TargetType="MenuItem">
-                        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
-                        <Setter Property="Padding" Value="12,7" />
-                        <Setter Property="MinWidth" Value="150" />
-                    </Style>
-                </ContextMenu.Resources>
-                <MenuItem Header="Xem nhanh" Click="QuickViewPdf_Click" />
-                <MenuItem Header="Mở vị trí" Click="OpenPdfLocation_Click" />
-                <MenuItem Header="Đổi tên" Click="RenamePdf_Click" />
-                <Separator />
-                <MenuItem Header="Xóa"
-                          Foreground="{DynamicResource TextDangerBrush}"
-                          Click="DeletePdf_Click" />
-            </ContextMenu>
-        </ResourceDictionary>
+        <ContextMenu x:Key="PdfLibraryContextMenu"
+                     DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"
+                     Background="{DynamicResource SurfaceDefaultBrush}"
+                     BorderBrush="{DynamicResource BorderSubtleBrush}"
+                     Foreground="{DynamicResource TextPrimaryBrush}">
+            <MenuItem Header="Xem nhanh"
+                      Style="{StaticResource Fluent.MenuItem}"
+                      Click="QuickViewPdf_Click" />
+            <MenuItem Header="Mở vị trí"
+                      Style="{StaticResource Fluent.MenuItem}"
+                      Click="OpenPdfLocation_Click" />
+            <MenuItem Header="Đổi tên"
+                      Style="{StaticResource Fluent.MenuItem}"
+                      Click="RenamePdf_Click" />
+            <Separator />
+            <MenuItem Header="Xóa"
+                      Style="{StaticResource Fluent.MenuItem}"
+                      Foreground="{DynamicResource TextDangerBrush}"
+                      Click="DeletePdf_Click" />
+        </ContextMenu>
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -53,10 +47,10 @@
                         KeyboardNavigation.TabNavigation="Local">
                 <RadioButton GroupName="MainNavigation"
                              IsChecked="{Binding IsSelected, ElementName=ScanTab, Mode=TwoWay}"
-                             Style="{StaticResource MainNavigationTab}"
+                             Style="{StaticResource Fluent.Navigation.Tab}"
                              AutomationProperties.Name="Quét PDF">
                     <StackPanel Orientation="Horizontal">
-                        <controls:SvgIcon Source="assets/geometric-reading-scan.svg"
+                        <controls:SvgIcon Source="pack://application:,,,/BizNext.Modules.QuickScan;component/Assets/geometric-reading-scan.svg"
                                           Width="17"
                                           Height="17"
                                           Margin="0,0,8,0"
@@ -66,10 +60,10 @@
                 </RadioButton>
                 <RadioButton GroupName="MainNavigation"
                              IsChecked="{Binding IsSelected, ElementName=LibraryTab, Mode=TwoWay}"
-                             Style="{StaticResource MainNavigationTab}"
+                             Style="{StaticResource Fluent.Navigation.Tab}"
                              AutomationProperties.Name="Thư viện PDF">
                     <StackPanel Orientation="Horizontal">
-                        <controls:SvgIcon Source="assets/files.svg"
+                        <controls:SvgIcon Source="pack://application:,,,/BizNext.Modules.QuickScan;component/Assets/files.svg"
                                           Width="17"
                                           Height="17"
                                           Margin="0,0,8,0"
@@ -83,17 +77,11 @@
 
         <TabControl x:Name="MainTabControl"
                     Grid.Row="1"
+                    Style="{StaticResource Fluent.TabControl.ContentHost}"
                     Background="Transparent"
                     BorderThickness="0"
                     SelectionChanged="MainTabControl_SelectionChanged"
                     KeyboardNavigation.TabNavigation="Local">
-            <TabControl.Template>
-                <ControlTemplate TargetType="TabControl">
-                    <ContentPresenter x:Name="PART_SelectedContentHost"
-                                      ContentSource="SelectedContent"
-                                      SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
-                </ControlTemplate>
-            </TabControl.Template>
             <TabItem x:Name="ScanTab" Header="Quét PDF" IsSelected="True"
                      Foreground="{DynamicResource TextPrimaryBrush}">
                 <Grid Margin="6">
@@ -132,10 +120,10 @@
                                         <TextBlock Text="MÁY SCAN"
                                                    Style="{StaticResource FieldLabel}" />
                                         <Grid>
-                                            <ComboBox Style="{StaticResource InputComboBox}"
+                                            <ComboBox Style="{StaticResource Fluent.ComboBox}"
                                                       IsEnabled="{Binding CanChangeScanConfiguration}"
                                                       ItemsSource="{Binding Scanners}"
-                                                      ItemContainerStyle="{StaticResource ScannerOptionItem}"
+                                                      ItemContainerStyle="{StaticResource Fluent.ComboBoxItem.AddNew}"
                                                       DisplayMemberPath="DisplayName"
                                                       SelectedValuePath="DeviceId"
                                                       SelectedValue="{Binding SelectedScannerId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
@@ -144,18 +132,9 @@
                                                        VerticalAlignment="Center"
                                                        FontSize="{StaticResource CompactControlFontSize}"
                                                        Foreground="{DynamicResource TextMutedBrush}"
-                                                       IsHitTestVisible="False">
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock">
-                                                        <Setter Property="Visibility" Value="Collapsed" />
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding SelectedScanner}" Value="{x:Null}">
-                                                                <Setter Property="Visibility" Value="Visible" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
+                                                       IsHitTestVisible="False"
+                                                       Tag="{Binding SelectedScanner}"
+                                                       Style="{StaticResource Fluent.Visibility.VisibleWhenNull}" />
                                         </Grid>
                                         <Grid Margin="0,8,0,0">
                                             <Grid.ColumnDefinitions>
@@ -164,12 +143,12 @@
                                                 <ColumnDefinition Width="*" />
                                             </Grid.ColumnDefinitions>
                                             <Button Content="{Binding ProfileButtonText}"
-                                                    Style="{StaticResource SecondaryButton}"
+                                                    Style="{StaticResource Fluent.Button.Secondary}"
                                                     Grid.Column="0"
                                                     Padding="5,0"
                                                     Command="{Binding AddOrEditProfileCommand}" />
                                             <Button Content="Xóa bí danh"
-                                                    Style="{StaticResource SecondaryButton}"
+                                                    Style="{StaticResource Fluent.Button.Secondary}"
                                                     Grid.Column="2"
                                                     Padding="5,0"
                                                     Foreground="{DynamicResource TextDangerBrush}"
@@ -179,7 +158,7 @@
                                     <StackPanel Grid.Row="2" Margin="0,11,0,0">
                                         <TextBlock Text="CHẾ ĐỘ MÀU"
                                                    Style="{StaticResource FieldLabel}" />
-                                        <ComboBox Style="{StaticResource InputComboBox}"
+                                        <ComboBox Style="{StaticResource Fluent.ComboBox}"
                                                   IsEnabled="{Binding CanChangeScanConfiguration}"
                                                   SelectedValuePath="Tag"
                                                   SelectedValue="{Binding SelectedColorMode, Mode=TwoWay}">
@@ -191,7 +170,7 @@
                                     <StackPanel Grid.Row="3" Margin="0,11,0,0">
                                         <TextBlock Text="ĐỘ PHÂN GIẢI"
                                                    Style="{StaticResource FieldLabel}" />
-                                        <ComboBox Style="{StaticResource InputComboBox}"
+                                        <ComboBox Style="{StaticResource Fluent.ComboBox}"
                                                   IsEnabled="{Binding CanChangeScanConfiguration}"
                                                   SelectedIndex="{Binding SelectedResolutionIndex, Mode=TwoWay}">
                                             <ComboBoxItem Content="150 DPI" Tag="150" />
@@ -202,7 +181,7 @@
                                     <StackPanel Grid.Row="4" Margin="0,11,0,0">
                                         <TextBlock Text="NGUỒN NẠP"
                                                    Style="{StaticResource FieldLabel}" />
-                                        <ComboBox Style="{StaticResource InputComboBox}"
+                                        <ComboBox Style="{StaticResource Fluent.ComboBox}"
                                                   IsEnabled="{Binding CanChangeScanConfiguration}"
                                                   SelectedValuePath="Tag"
                                                   SelectedValue="{Binding SelectedSource, Mode=TwoWay}">
@@ -211,12 +190,12 @@
                                         </ComboBox>
                                     </StackPanel>
                                     <StackPanel Grid.Row="6">
-                                        <Button Style="{StaticResource PrimaryButton}"
+                                        <Button Style="{StaticResource Fluent.Button.Primary}"
                                                 Margin="0,0,0,6"
                                                 Command="{Binding ScanPageCommand}"
                                                 AutomationProperties.Name="Quét trang">
                                             <StackPanel Orientation="Horizontal">
-                                                <controls:SvgIcon Source="assets/cartoon-file-scan.svg"
+                                                <controls:SvgIcon Source="pack://application:,,,/BizNext.Modules.QuickScan;component/Assets/cartoon-file-scan.svg"
                                                                   Width="17"
                                                                   Height="17"
                                                                   Margin="0,0,8,0"
@@ -224,12 +203,12 @@
                                                 <TextBlock Text="Quét trang" />
                                             </StackPanel>
                                         </Button>
-                                        <Button Style="{StaticResource SecondaryButton}"
+                                        <Button Style="{StaticResource Fluent.Button.Secondary}"
                                                 IsEnabled="{Binding CanBatchScan}"
                                                 Command="{Binding BatchScanCommand}"
                                                 AutomationProperties.Name="{Binding BatchScanButtonText}">
                                             <StackPanel Orientation="Horizontal">
-                                                <controls:SvgIcon Source="assets/sequential-scan.svg"
+                                                <controls:SvgIcon Source="pack://application:,,,/BizNext.Modules.QuickScan;component/Assets/sequential-scan.svg"
                                                                   Width="17"
                                                                   Height="17"
                                                                   Margin="0,0,8,0"
@@ -242,13 +221,13 @@
                                                    FontSize="{StaticResource CompactCaptionFontSize}"
                                                    Foreground="{DynamicResource TextMutedBrush}"
                                                    TextWrapping="Wrap" />
-                                        <Button Style="{StaticResource SecondaryButton}"
+                                        <Button Style="{StaticResource Fluent.Button.Secondary}"
                                                 Margin="0,20,0,0"
                                                 Click="AddFiles_Click"
                                                 IsEnabled="{Binding CanChangeScanConfiguration}"
                                                 AutomationProperties.Name="Thêm ảnh hoặc PDF">
                                             <StackPanel Orientation="Horizontal">
-                                                <controls:SvgIcon Source="assets/image-up.svg"
+                                                <controls:SvgIcon Source="pack://application:,,,/BizNext.Modules.QuickScan;component/Assets/image-up.svg"
                                                                   Width="17"
                                                                   Height="17"
                                                                   Margin="0,0,8,0"
@@ -306,30 +285,13 @@
                                                    Stretch="Uniform"
                                                    Margin="12"
                                                    RenderOptions.BitmapScalingMode="HighQuality"
-                                                   AutomationProperties.Name="Bản xem trước trang đã quét">
-                                                <Image.Style>
-                                                    <Style TargetType="Image">
-                                                        <Setter Property="Visibility" Value="Visible" />
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding SelectedPage}" Value="{x:Null}">
-                                                                <Setter Property="Visibility" Value="Collapsed" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Image.Style>
-                                            </Image>
+                                                   AutomationProperties.Name="Bản xem trước trang đã quét"
+                                                   Tag="{Binding SelectedPage}"
+                                                   Style="{StaticResource Fluent.Visibility.VisibleWhenNotNull}" />
                                             <StackPanel HorizontalAlignment="Center"
-                                                        VerticalAlignment="Center">
-                                                <StackPanel.Style>
-                                                    <Style TargetType="StackPanel">
-                                                        <Setter Property="Visibility" Value="Collapsed" />
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding SelectedPage}" Value="{x:Null}">
-                                                                <Setter Property="Visibility" Value="Visible" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </StackPanel.Style>
+                                                        VerticalAlignment="Center"
+                                                        Tag="{Binding SelectedPage}"
+                                                        Style="{StaticResource Fluent.Visibility.VisibleWhenNull}">
                                             <Border Width="60"
                                                     Height="60"
                                                     CornerRadius="{StaticResource CardCornerRadius}"
@@ -362,25 +324,25 @@
                                     <WrapPanel Grid.Row="2"
                                                HorizontalAlignment="Center">
                                         <Button Content="↶  Xoay trái"
-                                                Style="{StaticResource SecondaryButton}"
+                                                Style="{StaticResource Fluent.Button.Secondary}"
                                                 Margin="2"
                                                 Command="{Binding RotateSelectedPageLeftCommand}"
                                                 ToolTip="Xoay trang sang trái 90 độ"
                                                 AutomationProperties.Name="Xoay trang sang trái" />
                                         <Button Content="↷  Xoay phải"
-                                                Style="{StaticResource SecondaryButton}"
+                                                Style="{StaticResource Fluent.Button.Secondary}"
                                                 Margin="2"
                                                 Command="{Binding RotateSelectedPageRightCommand}"
                                                 ToolTip="Xoay trang sang phải 90 độ"
                                                 AutomationProperties.Name="Xoay trang sang phải" />
                                         <Button Content="↕  Lật lên/xuống"
-                                                Style="{StaticResource SecondaryButton}"
+                                                Style="{StaticResource Fluent.Button.Secondary}"
                                                 Margin="2"
                                                 Command="{Binding FlipSelectedPageVerticalCommand}"
                                                 ToolTip="Lật trang theo trục ngang"
                                                 AutomationProperties.Name="Lật trang lên xuống" />
                                         <Button Content="↔  Lật trái/phải"
-                                                Style="{StaticResource SecondaryButton}"
+                                                Style="{StaticResource Fluent.Button.Secondary}"
                                                 Margin="2"
                                                 Command="{Binding FlipSelectedPageHorizontalCommand}"
                                                 ToolTip="Lật trang theo trục dọc"
@@ -428,8 +390,8 @@
                                             <ListBox ItemsSource="{Binding ScanPages}"
                                                      x:Name="ScanPageList"
                                                      SelectedItem="{Binding SelectedPage, Mode=TwoWay}"
-                                                     Style="{StaticResource ScanPageListBox}"
-                                                     ItemContainerStyle="{StaticResource ScanPageListBoxItem}"
+                                                     Style="{StaticResource Fluent.ListBox}"
+                                                     ItemContainerStyle="{StaticResource Fluent.ListBox.Item}"
                                                      AllowDrop="True"
                                                      PreviewMouseLeftButtonDown="ScanPageList_PreviewMouseLeftButtonDown"
                                                      PreviewMouseMove="ScanPageList_PreviewMouseMove"
@@ -476,7 +438,7 @@
                                                                            Foreground="{DynamicResource TextMutedBrush}" />
                                                             </StackPanel>
                                                             <Button Grid.Column="3"
-                                                                    Style="{StaticResource ScanPageDeleteButton}"
+                                                                    Style="{StaticResource Fluent.Button.ListItemReveal}"
                                                                     Content="×"
                                                                     ToolTip="Xóa trang"
                                                                     AutomationProperties.Name="Xóa trang khỏi danh sách"
@@ -487,17 +449,9 @@
                                                 </ListBox.ItemTemplate>
                                             </ListBox>
                                         <StackPanel HorizontalAlignment="Center"
-                                                    VerticalAlignment="Center">
-                                            <StackPanel.Style>
-                                                <Style TargetType="StackPanel">
-                                                    <Setter Property="Visibility" Value="Collapsed" />
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding ScanPageCount}" Value="0">
-                                                            <Setter Property="Visibility" Value="Visible" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </StackPanel.Style>
+                                                    VerticalAlignment="Center"
+                                                    Tag="{Binding ScanPageCount}"
+                                                    Style="{StaticResource Fluent.Visibility.VisibleWhenZero}">
                                             <TextBlock Text="Chưa có trang"
                                                        FontSize="{StaticResource CompactLabelFontSize}"
                                                        FontWeight="SemiBold"
@@ -549,12 +503,12 @@
                                                 <ColumnDefinition Width="6" />
                                                 <ColumnDefinition Width="34" />
                                             </Grid.ColumnDefinitions>
-                                            <ComboBox Style="{StaticResource InputComboBox}"
+                                            <ComboBox Style="{StaticResource Fluent.ComboBox}"
                                                       ItemsSource="{Binding PdfLocations}"
                                                       SelectedItem="{Binding PdfLocation, Mode=TwoWay}"
                                                       AutomationProperties.Name="Nơi lưu PDF" />
                                             <Button Grid.Column="2"
-                                                    Style="{StaticResource SecondaryButton}"
+                                                    Style="{StaticResource Fluent.Button.Secondary}"
                                                     Padding="0"
                                                     Click="CreatePdfFolder_Click"
                                                     ToolTip="Tạo thư mục mới"
@@ -569,13 +523,13 @@
                                         <TextBlock Text="CHỌN KHỔ GIẤY"
                                                    Style="{StaticResource FieldLabel}"
                                                    Margin="0,10,0,5" />
-                                        <ComboBox Style="{StaticResource InputComboBox}"
+                                        <ComboBox Style="{StaticResource Fluent.ComboBox}"
                                                   ItemsSource="{Binding PaperSizes}"
                                                   DisplayMemberPath="Name"
                                                   SelectedItem="{Binding SelectedPdfPageSize, Mode=TwoWay}"
                                                   AutomationProperties.Name="Khổ giấy PDF" />
                                         <Button Content="Lưu thành PDF"
-                                                Style="{StaticResource PrimaryButton}"
+                                                Style="{StaticResource Fluent.Button.Primary}"
                                                 Margin="0,12,0,0"
                                                 Command="{Binding SavePdfCommand}" />
                                     </StackPanel>
@@ -622,7 +576,7 @@
                                         <TextBlock Text="THƯ MỤC"
                                                    Style="{StaticResource FieldLabel}" />
                                         <ComboBox x:Name="LibraryFolderComboBox"
-                                                  Style="{StaticResource InputComboBox}"
+                                                  Style="{StaticResource Fluent.ComboBox}"
                                                   DisplayMemberPath="Name"
                                                   SelectionChanged="LibraryFolderComboBox_SelectionChanged"
                                                   AutomationProperties.Name="Thư mục PDF" />
@@ -630,14 +584,14 @@
                                     <Button x:Name="LibraryRefreshButton"
                                             Grid.Column="4"
                                             Content="↻  Làm mới"
-                                            Style="{StaticResource SecondaryButton}"
+                                            Style="{StaticResource Fluent.Button.Secondary}"
                                             VerticalAlignment="Top"
                                             Margin="0,18,0,0"
                                             Click="RefreshLibrary_Click" />
                                     <Button x:Name="OpenLibraryFolderButton"
                                             Grid.Column="6"
                                             Content="Mở trong cửa sổ ngoài"
-                                            Style="{StaticResource SecondaryButton}"
+                                            Style="{StaticResource Fluent.Button.Secondary}"
                                             VerticalAlignment="Top"
                                             Margin="0,18,0,0"
                                             Click="OpenLibraryFolder_Click"
@@ -659,21 +613,8 @@
                                                   Margin="8,6"
                                                   AutomationProperties.Name="Danh sách file PDF và thư mục"
                                                   MouseDoubleClick="LibraryGrid_MouseDoubleClick"
-                                                  Sorting="LibraryGrid_Sorting">
-                                            <DataGrid.RowStyle>
-                                                <Style TargetType="DataGridRow"
-                                                       BasedOn="{StaticResource LibraryDataGridRow}">
-                                                    <Setter Property="ContextMenu"
-                                                            Value="{StaticResource PdfLibraryContextMenu}" />
-                                                    <EventSetter Event="ContextMenuOpening"
-                                                                 Handler="LibraryGridRow_ContextMenuOpening" />
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsFolder}" Value="True">
-                                                            <Setter Property="ContextMenu" Value="{x:Null}" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </DataGrid.RowStyle>
+                                                  Sorting="LibraryGrid_Sorting"
+                                                  LoadingRow="LibraryGrid_LoadingRow">
                                             <DataGrid.Columns>
                                                 <DataGridTemplateColumn Header="TÊN TẬP TIN"
                                                                         Width="2.1*"
@@ -745,7 +686,7 @@
                                                     CornerRadius="{StaticResource CardCornerRadius}"
                                                     Background="{DynamicResource SurfaceEmptyBrush}"
                                                     HorizontalAlignment="Center">
-                                                <controls:SvgIcon Source="assets/files.svg"
+                                                <controls:SvgIcon Source="pack://application:,,,/BizNext.Modules.QuickScan;component/Assets/files.svg"
                                                                   Width="25"
                                                                   Height="25"
                                                                   Foreground="{DynamicResource TextIconBrush}"
@@ -802,12 +743,12 @@
                 <TextBlock Text="●"
                            FontSize="10"
                            Margin="0,0,8,0"
-                           Style="{StaticResource StatusMessageText}"
+                           Tag="{Binding StatusSeverity, Converter={StaticResource EnumToStringConverter}}" Style="{StaticResource Fluent.StatusText.Dynamic}"
                            VerticalAlignment="Center" />
                 <TextBlock Grid.Column="1"
                            Text="{Binding StatusMessage}"
                            FontSize="{StaticResource CompactCaptionFontSize}"
-                           Style="{StaticResource StatusMessageText}"
+                           Tag="{Binding StatusSeverity, Converter={StaticResource EnumToStringConverter}}" Style="{StaticResource Fluent.StatusText.Dynamic}"
                            TextTrimming="CharacterEllipsis"
                            VerticalAlignment="Center" />
                 <Button Grid.Column="2"
@@ -818,7 +759,7 @@
                         ToolTip="Cài đặt QuickScan"
                         AutomationProperties.Name="Cài đặt ứng dụng">
                     <StackPanel Orientation="Horizontal">
-                        <controls:SvgIcon Source="assets/geometric-settings.svg"
+                        <controls:SvgIcon Source="pack://application:,,,/BizNext.Modules.QuickScan;component/Assets/geometric-settings.svg"
                                           Width="14"
                                           Height="14"
                                           Margin="0,0,6,0"

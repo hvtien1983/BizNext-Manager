@@ -43,8 +43,6 @@ internal sealed class WeatherCalendarModuleView : UserControl
         {
             Margin = new Thickness(24),
             Padding = new Thickness(28),
-            BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(12),
             Child = new StackPanel
             {
                 VerticalAlignment = VerticalAlignment.Center,
@@ -55,8 +53,7 @@ internal sealed class WeatherCalendarModuleView : UserControl
                 }
             }
         };
-        card.SetResourceReference(Border.BackgroundProperty, "SurfaceDefaultBrush");
-        card.SetResourceReference(Border.BorderBrushProperty, "BorderDefaultBrush");
+        card.SetResourceReference(StyleProperty, "SectionCard");
         Content = card;
     }
 }

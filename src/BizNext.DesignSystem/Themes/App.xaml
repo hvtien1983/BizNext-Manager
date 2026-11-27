@@ -22,6 +22,7 @@
         <!-- 5. Shared Styles - Display & Feedback -->
         <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/TooltipProgressStyles.xaml" />
         <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/StatusIndicatorStyles.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/VisibilityStyles.xaml" />
 
         <!-- 6. Shared Styles - Navigation -->
         <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/NavigationMenuStyles.xaml" />

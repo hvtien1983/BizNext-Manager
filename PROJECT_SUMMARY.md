@@ -83,13 +83,17 @@ BizNext-Manager.sln
 │  │  ├─ MainWindow.xaml(.cs)              Dashboard UI - sidebar + module host area
 │  │  ├─ DashboardSettingsWindow.xaml(.cs) Settings dialog cho theme selection
 │  │  ├─ Themes/
-│  │  │  ├─ DesignTokens.xaml              Light theme tokens
-│  │  │  ├─ DarkTheme.xaml                 Dark theme
-│  │  │  ├─ ControlStyles.xaml             Shared control styles (cards, inputs, buttons, grids...)
-│  │  │  └─ [Adapters from .github/skills/ui-design-system/]
+│  │  │  └─ ControlStyles.xaml             Dashboard-only theme option style
 │  │  ├─ Converters/
 │  │  │  └─ [Value converters for XAML bindings]
 │  │  └─ BizNext.Shell.csproj
+│  │
+│  ├─ BizNext.DesignSystem/                [WPF shared UI library]
+│  │  ├─ Themes/DesignTokens.xaml          Shared semantic tokens
+│  │  ├─ Themes/DarkTheme.xaml             Dark theme overrides
+│  │  ├─ Themes/Shared/                    Reusable styles and templates
+│  │  ├─ Components/                       Reusable WPF controls
+│  │  └─ Converters/                       Shared UI converters
 │  │
 │  ├─ BizNext.Modules.QuickScan/           [Class Library WPF, net10.0-windows] ⭐ ACTIVE
 │  │  ├─ QuickScanView.xaml(.cs)           Main UserControl - module UI root
@@ -116,18 +120,14 @@ BizNext-Manager.sln
 │  │  │  ├─ ScannerSettingsViewModel.cs    Settings screen ViewModel
 │  │  │  ├─ ScannerOption.cs               Dropdown option cho scanner selection
 │  │  │  └─ StatusMessageType.cs           Enum: Info, Success, Warning, Error
-│  │  ├─ Controls/
-│  │  │  └─ [Custom WPF controls nếu có]
 │  │  ├─ Assets/
 │  │  │  ├─ icon.ico                       App icon
 │  │  │  ├─ icon.png
 │  │  │  └─ *.svg                          Vector icons
-│  │  ├─ Themes/
-│  │  │  └─ QuickScanStyles.xaml           Module-specific styles (không lặp Shell styles)
 │  │  ├─ storage/                          Temp storage directory
 │  │  └─ BizNext.Modules.QuickScan.csproj
 │  │     Dependencies: BizNext.Contracts, BizNext.Infrastructure,
-│  │                   ScanCore, ScanDevice, PDFtoImage (NuGet)
+│  │                   BizNext.DesignSystem, ScanCore, ScanDevice, PDFtoImage
 │  │
 │  ├─ BizNext.Modules.Notes/               [Class Library WPF, net10.0-windows] 📝 Placeholder
 │  │  └─ [Khung cơ bản - sẵn sàng để phát triển]
@@ -268,10 +268,8 @@ System      → Follow Windows system theme
   - Cached between navigations (preserves state)
 
 - **Themes Path:**
-  - `src/BizNext.Shell/Themes/` - Shared resources
-  - `DesignTokens.xaml` - Light theme tokens
-  - `DarkTheme.xaml` - Dark theme overrides
-  - `ControlStyles.xaml` - Shared component styles
+  - `src/BizNext.DesignSystem/Themes/` - Shared tokens, themes, and control styles
+  - `src/BizNext.Shell/Themes/` - Dashboard-only styles and theme application
   - Source tokens: `.github/skills/ui-design-system/` (source-of-truth)
 
 ### QuickScanView (BizNext.Modules.QuickScan)
@@ -314,12 +312,12 @@ System      → Follow Windows system theme
 
 ### Design System Integration
 - **Tokens Source:** `.github/skills/ui-design-system/` (semantic design tokens)
-- **WPF Adapters:** `src/BizNext.Shell/Themes/DesignTokens.xaml` + `DarkTheme.xaml`
-- **Shared Styles:** `ControlStyles.xaml` (cards, labels, inputs, buttons, grids, tabs)
+- **WPF Adapters:** `src/BizNext.DesignSystem/Themes/DesignTokens.xaml` + `DarkTheme.xaml`
+- **Shared Styles:** `src/BizNext.DesignSystem/Themes/Shared/`
+- **Reusable Controls:** `src/BizNext.DesignSystem/Components/`
 - **Dynamic Resources:** Modules use `DynamicResource` for brushes (follow theme changes)
-- **Module Styles:** `src/BizNext.Modules.QuickScan/Themes/QuickScanStyles.xaml`
-  - Scan-only specific styles (not duplicating Shell styles)
-  - Merged into QuickScanView
+- **Module UI:** Modules compose feature views and behavior but do not define local styles,
+  reusable controls, components, or theme dictionaries.
 
 ---
 
@@ -828,7 +826,8 @@ dotnet clean .\BizNext-Manager.sln
 2. **Respect Theme System**
    - Use `DynamicResource` for all brushes/colors
    - Don't hardcode colors
-   - Merge custom styles into module views
+   - Reuse styles and controls from `BizNext.DesignSystem/Themes/Shared/` and `Components/`
+   - Do not add module-local styles, reusable controls, components, or theme dictionaries
 
 3. **Data Compatibility**
    - QuickScan data lives in separate folder for backward compatibility

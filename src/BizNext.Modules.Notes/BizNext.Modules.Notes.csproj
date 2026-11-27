@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="..\BizNext.Contracts\BizNext.Contracts.csproj" />
+    <ProjectReference Include="..\BizNext.DesignSystem\BizNext.DesignSystem.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
