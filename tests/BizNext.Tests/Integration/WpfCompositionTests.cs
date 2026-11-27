@@ -1,18 +1,41 @@
+using System.Collections;
 using System.Runtime.ExceptionServices;
+using System.IO;
+using System.Resources;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using BizNext.Contracts;
+using BizNext.Contracts.Models;
 using BizNext.DesignSystem.Utils;
+using BizNext.Infrastructure.Settings;
+using BizNext.Infrastructure.Storage;
 using BizNext.Modules.Notes;
 using BizNext.Modules.QuickScan;
 using BizNext.Modules.QuickScan.Models;
 using BizNext.Modules.WeatherCalendar;
+using BizNext.Tests.TestSupport;
 
 namespace BizNext.Tests.Integration;
 
 public sealed class WpfCompositionTests
 {
+    [Fact]
+    public void ShellAssemblyContainsWindowIconResource()
+    {
+        using var resources = typeof(BizNext.Shell.MainWindow).Assembly
+            .GetManifestResourceStream("BizNext.Shell.g.resources");
+        Assert.NotNull(resources);
+        using var reader = new ResourceReader(resources);
+        var icon = reader.Cast<DictionaryEntry>()
+            .Single(entry => Equals(entry.Key, "assets/icon.ico"));
+        using var stream = Assert.IsAssignableFrom<Stream>(icon.Value);
+        Assert.Equal(0, stream.ReadByte());
+        Assert.Equal(0, stream.ReadByte());
+        Assert.Equal(1, stream.ReadByte());
+        Assert.Equal(0, stream.ReadByte());
+    }
+
     [Fact]
     public void RealModuleViewsUseSharedResourcesAndThemesOnStaThread()
     {
@@ -21,23 +44,8 @@ public sealed class WpfCompositionTests
         {
             try
             {
-                var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
-                app.Resources.MergedDictionaries.Add(new ResourceDictionary
-                {
-                    Source = new Uri("pack://application:,,,/BizNext.DesignSystem;component/Themes/DesignTokens.xaml")
-                });
-                app.Resources.MergedDictionaries.Add(new ResourceDictionary
-                {
-                    Source = new Uri("pack://application:,,,/BizNext.DesignSystem;component/Themes/App.xaml")
-                });
-                app.Resources.MergedDictionaries.Add(new ResourceDictionary
-                {
-                    Source = new Uri("pack://application:,,,/BizNext.Shell;component/Themes/ShellSpecific.xaml")
-                });
-                app.Resources.MergedDictionaries.Add(new ResourceDictionary
-                {
-                    Source = new Uri("pack://application:,,,/BizNext.Shell;component/Themes/ControlStyles.xaml")
-                });
+                var app = new BizNext.Shell.App { ShutdownMode = ShutdownMode.OnExplicitShutdown };
+                app.InitializeComponent();
 
                 var light = ((SolidColorBrush)app.FindResource("SurfaceCanvasBrush")).Color;
                 ThemeManager.SetTheme(AppTheme.Dark);
@@ -52,6 +60,35 @@ public sealed class WpfCompositionTests
                     new NotesModule(),
                     new WeatherCalendarModule()
                 ];
+                using var temp = new TemporaryDirectory();
+                var store = new ShellSettingsStore(Path.Combine(temp.Path, "shell.json"), new JsonFileStorage());
+                var shell = new BizNext.Shell.MainWindow(
+                    modules, store,
+                    new ShellSettings { LastSelectedModuleId = "biznext.module.quickscan" }, null);
+                var settingsDialog = new BizNext.Shell.DashboardSettingsWindow(ThemePreference.Light);
+                Assert.NotNull(shell.Icon);
+                Assert.NotNull(settingsDialog.Icon);
+                shell.Measure(new Size(1360, 820));
+                shell.Arrange(new Rect(0, 0, 1360, 820));
+                shell.UpdateLayout();
+                shell.RaiseEvent(new RoutedEventArgs(FrameworkElement.LoadedEvent));
+                var quickScan = Assert.IsType<QuickScanView>(
+                    Assert.IsType<ContentControl>(shell.FindName("ContentHost")).Content);
+                Assert.NotNull(quickScan.DataContext);
+                Assert.IsType<TabControl>(quickScan.FindName("MainTabControl"));
+                shell.Measure(new Size(1200, 720));
+                shell.Arrange(new Rect(0, 0, 1200, 720));
+                shell.UpdateLayout();
+                quickScan.Measure(new Size(964, 720));
+                quickScan.Arrange(new Rect(0, 0, 964, 720));
+                quickScan.UpdateLayout();
+                ThemeManager.SetTheme(AppTheme.Dark);
+                quickScan.Measure(new Size(1124, 820));
+                quickScan.Arrange(new Rect(0, 0, 1124, 820));
+                quickScan.UpdateLayout();
+                ThemeManager.SetTheme(AppTheme.Light);
+                settingsDialog.Close();
+                shell.Close();
                 Assert.Equal("NotesModuleView", Assert.IsAssignableFrom<UserControl>(modules[1].CreateView()).GetType().Name);
                 Assert.Equal("WeatherCalendarModuleView", Assert.IsAssignableFrom<UserControl>(modules[2].CreateView()).GetType().Name);
                 Assert.Equal("biznext.module.quickscan", modules[0].Metadata.Id);
@@ -74,9 +111,6 @@ public sealed class WpfCompositionTests
                 root.Arrange(new Rect(0, 0, 1000, 650));
                 root.UpdateLayout();
                 host.Close();
-                var quickScan = Assert.IsType<QuickScanView>(modules[0].CreateView());
-                Assert.NotNull(quickScan.DataContext);
-                Assert.IsType<TabControl>(quickScan.FindName("MainTabControl"));
                 app.Shutdown();
             }
             catch (Exception exception)

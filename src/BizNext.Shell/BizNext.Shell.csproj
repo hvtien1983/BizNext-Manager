@@ -6,6 +6,7 @@
     <ProjectReference Include="..\BizNext.Modules.Notes\BizNext.Modules.Notes.csproj" />
     <ProjectReference Include="..\BizNext.Modules.QuickScan\BizNext.Modules.QuickScan.csproj" />
     <ProjectReference Include="..\BizNext.Modules.WeatherCalendar\BizNext.Modules.WeatherCalendar.csproj" />
+    <Resource Include="..\BizNext.Modules.QuickScan\Assets\icon.ico" Link="Assets\icon.ico" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -162,14 +162,12 @@ The source proposal and the earlier comparison remain in the conversation.
 navigation, JSON persistence, QuickScan services, and WPF composition on an
 STA thread. `tests/BizNext.TestHost` is a separate preview app with the real
 Notes and WeatherCalendar placeholder views and a Shell settings preview.
-Shell settings currently fails to open in TestHost because the Shell assembly
-does not contain its referenced `Assets/icon.ico`; the host reports the error.
+The Shell embeds its standard `Assets/icon.ico` as a WPF resource so both Shell
+windows can load their icons when hosted by the application or TestHost.
 QuickScan view preview is deferred because it uses real user-data paths.
 Widgets do not yet exist. See README for commands and limitations.
-The isolated QuickScan view-construction check currently fails because
-`StatusBarButton` is defined in `ButtonStyles.xaml`, which is not merged into
-the DesignSystem application resources. The test stops before `Loaded` and
-does not exercise scanning or access user files.
+The QuickScan view-construction test stops before `Loaded` and does not
+exercise scanning or access user files.
 
 **Phase 8 - XAML Compatibility & Agent Configuration (2026-11-27):**
 

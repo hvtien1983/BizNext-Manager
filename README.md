@@ -45,19 +45,14 @@ dotnet test .\tests\BizNext.Tests\BizNext.Tests.csproj -c Release --filter "Full
 
 Test ghi file vào thư mục tạm riêng, dùng fake scanner, không dùng máy scan
 hoặc dữ liệu QuickScan thật. Test WPF chạy trên STA và kiểm tra tài nguyên,
-theme và layout TestHost. Các test hiện chưa bao phủ toàn bộ thao tác GUI.
-Kiểm thử khởi tạo QuickScan hiện thất bại vì không tìm thấy tài nguyên
-`StatusBarButton`; style có trong `ButtonStyles.xaml` nhưng dictionary này
-chưa được ghép vào DesignSystem. Test này không kích hoạt `Loaded` hoặc
-nghiệp vụ quét.
+theme và layout Shell/TestHost. Các test hiện chưa bao phủ toàn bộ thao tác GUI.
+Kiểm thử khởi tạo QuickScan không kích hoạt `Loaded` hoặc nghiệp vụ quét.
 
 `BizNext.TestHost` là ứng dụng độc lập, dùng tài nguyên DesignSystem để xem
 view hiện có của Ghi chú và Lịch & Thời tiết, cùng nút thử cửa sổ cài đặt
 Dashboard. Có thể chuyển sáng/tối; thay đổi không lưu vào cài đặt ứng dụng.
-Hiện cửa sổ cài đặt Shell báo lỗi không tìm thấy `assets/icon.ico` khi mở
-từ TestHost; TestHost hiển thị lỗi thay vì đóng đột ngột. QuickScan chưa được
-preview vì view hiện truy cập trực tiếp các đường dẫn người dùng. Chưa có
-widget thật trong solution để preview hoặc kiểm thử.
+QuickScan chưa được preview vì view hiện truy cập trực tiếp các đường dẫn
+người dùng. Chưa có widget thật trong solution để preview hoặc kiểm thử.
 
 Nếu ứng dụng đang chạy giữ DLL của cấu hình Debug, hãy dừng phiên debug
 trước khi build Debug hoặc dùng cấu hình Release như trên.

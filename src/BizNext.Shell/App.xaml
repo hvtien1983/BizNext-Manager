@@ -4,6 +4,8 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <!-- Templates resolve static tokens from application resources during layout. -->
+                <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/DesignTokens.xaml" />
                 <!-- Load BizNext.DesignSystem resources (includes themes, tokens, styles) -->
                 <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/App.xaml" />
 

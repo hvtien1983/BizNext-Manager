@@ -28,6 +28,7 @@
         <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/NavigationMenuStyles.xaml" />
 
         <!-- 7. Shared Styles - Buttons & Cards -->
+        <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/ButtonStyles.xaml" />
         <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/ButtonVariantStyles.xaml" />
         <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/CardStyles.xaml" />
         <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/DataGridStyles.xaml" />
