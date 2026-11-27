@@ -26,6 +26,38 @@ PDF, cấu hình máy scan hay thiết lập cũ.
 Thư viện PDF hỗ trợ tìm theo tên file, duyệt thư mục con, sắp xếp thông tin
 PDF và mở tài liệu trong cửa sổ xem tích hợp.
 
+## Kiểm thử
+
+Trên Windows với .NET 10 SDK hoặc SDK mới hơn có runtime Windows Desktop 10:
+
+```powershell
+dotnet test .\tests\BizNext.Tests\BizNext.Tests.csproj -c Release
+dotnet build .\BizNext-Manager.sln -c Release
+dotnet run --project .\tests\BizNext.TestHost\BizNext.TestHost.csproj -c Release
+```
+
+`BizNext.Tests` dùng xUnit/VSTest, chia test theo Shell, Infrastructure,
+Modules và Integration. Có thể chạy riêng một nhóm, ví dụ:
+
+```powershell
+dotnet test .\tests\BizNext.Tests\BizNext.Tests.csproj -c Release --filter "FullyQualifiedName~BizNext.Tests.Modules"
+```
+
+Test ghi file vào thư mục tạm riêng, dùng fake scanner, không dùng máy scan
+hoặc dữ liệu QuickScan thật. Test WPF chạy trên STA và kiểm tra tài nguyên,
+theme và layout TestHost. Các test hiện chưa bao phủ toàn bộ thao tác GUI.
+
+`BizNext.TestHost` là ứng dụng độc lập, dùng tài nguyên DesignSystem để xem
+view hiện có của Ghi chú và Lịch & Thời tiết, cùng nút thử cửa sổ cài đặt
+Dashboard. Có thể chuyển sáng/tối; thay đổi không lưu vào cài đặt ứng dụng.
+Hiện cửa sổ cài đặt Shell báo lỗi không tìm thấy `assets/icon.ico` khi mở
+từ TestHost; TestHost hiển thị lỗi thay vì đóng đột ngột. QuickScan chưa được
+preview vì view hiện truy cập trực tiếp các đường dẫn người dùng. Chưa có
+widget thật trong solution để preview hoặc kiểm thử.
+
+Nếu ứng dụng đang chạy giữ DLL của cấu hình Debug, hãy dừng phiên debug
+trước khi build Debug hoặc dùng cấu hình Release như trên.
+
 ## Kiến trúc
 
 - `BizNext.Contracts`: hợp đồng và metadata chung của module.

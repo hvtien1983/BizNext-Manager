@@ -147,6 +147,26 @@ is the preferred development/debug path when no scanner hardware is available.
 
 ## Current verification and next work
 
+### Deferred three-tier refactor
+
+The user approved option B (incremental, offline-first) and the scope of
+step 0, but deferred execution until after the requested test infrastructure.
+Resume by reviewing the step-0 baseline and smoke-test scope with the existing
+test suite; do not assume the whole step is already complete. Preserve
+QuickScan data and behavior, and obtain approval before later refactor stages.
+The source proposal and the earlier comparison remain in the conversation.
+
+### Test infrastructure
+
+`tests/BizNext.Tests` contains isolated xUnit tests for module catalog and
+navigation, JSON persistence, QuickScan services, and WPF composition on an
+STA thread. `tests/BizNext.TestHost` is a separate preview app with the real
+Notes and WeatherCalendar placeholder views and a Shell settings preview.
+Shell settings currently fails to open in TestHost because the Shell assembly
+does not contain its referenced `Assets/icon.ico`; the host reports the error.
+QuickScan view preview is deferred because it uses real user-data paths.
+Widgets do not yet exist. See README for commands and limitations.
+
 **Phase 8 - XAML Compatibility & Agent Configuration (2026-11-27):**
 
 ### XAML Compatibility Fixes
@@ -174,7 +194,7 @@ Created auto-delegation setup to optimize Claude AI credits usage:
 - Dashboard settings and persisted Light/Dark theme selection were smoke-tested.
   QuickScan was visually checked in both themes, including themed ComboBox
   selections/popups and the minimum 1200x720 window size.
-- There is no separate automated test project currently.
+- Automated test infrastructure is now present; see the section above.
 - Next feature work can implement Notes/Weather functionality or add
   management actions to the QuickScan PDF library. See the architecture guide
   before adding a module or shared UI behavior.

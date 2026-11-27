@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\BizNext.Shell\BizNext.Shell.csproj" />
+    <ProjectReference Include="..\..\src\BizNext.Contracts\BizNext.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\BizNext.DesignSystem\BizNext.DesignSystem.csproj" />
+    <ProjectReference Include="..\..\src\BizNext.Modules.Notes\BizNext.Modules.Notes.csproj" />
+    <ProjectReference Include="..\..\src\BizNext.Modules.WeatherCalendar\BizNext.Modules.WeatherCalendar.csproj" />
+    <Resource Include="..\..\src\BizNext.Modules.QuickScan\Assets\icon.ico" Link="Assets\icon.ico" />
+  </ItemGroup>
+
+</Project>

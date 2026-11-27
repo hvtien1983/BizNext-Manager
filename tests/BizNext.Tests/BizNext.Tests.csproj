@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\BizNext.Shell\BizNext.Shell.csproj" />
+    <ProjectReference Include="..\..\src\BizNext.Contracts\BizNext.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\BizNext.DesignSystem\BizNext.DesignSystem.csproj" />
+    <ProjectReference Include="..\..\src\BizNext.Infrastructure\BizNext.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\BizNext.Modules.Notes\BizNext.Modules.Notes.csproj" />
+    <ProjectReference Include="..\..\src\BizNext.Modules.QuickScan\BizNext.Modules.QuickScan.csproj" />
+    <ProjectReference Include="..\..\src\BizNext.Modules.WeatherCalendar\BizNext.Modules.WeatherCalendar.csproj" />
+    <ProjectReference Include="..\..\src\ScanCore\ScanCore.csproj" />
+    <ProjectReference Include="..\..\src\ScanDevice\ScanDevice.csproj" />
+    <ProjectReference Include="..\BizNext.TestHost\BizNext.TestHost.csproj" />
+    <Resource Include="..\..\src\BizNext.Modules.QuickScan\Assets\icon.ico" Link="Assets\icon.ico" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>
