@@ -1,0 +1,6 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- LIGHT THEME - Base (default) -->
+    <!-- This file is a placeholder for light theme overrides -->
+    <!-- All tokens default to light theme values in DesignTokens.xaml -->
+</ResourceDictionary>

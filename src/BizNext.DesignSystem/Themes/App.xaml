@@ -1,0 +1,18 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <!-- BizNext Design System - Master Resource Dictionary -->
+
+    <ResourceDictionary.MergedDictionaries>
+        <!-- 1. Semantic Design Tokens (Foundation) -->
+        <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/DesignTokens.xaml" />
+
+        <!-- 2. Light Theme (Default) -->
+        <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/LightTheme.xaml" />
+
+        <!-- 3. Shared Styles -->
+        <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/ButtonStyles.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/InputStyles.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/CardStyles.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/Shared/DataGridStyles.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+</ResourceDictionary>
