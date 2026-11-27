@@ -46,6 +46,10 @@ dotnet test .\tests\BizNext.Tests\BizNext.Tests.csproj -c Release --filter "Full
 Test ghi file vào thư mục tạm riêng, dùng fake scanner, không dùng máy scan
 hoặc dữ liệu QuickScan thật. Test WPF chạy trên STA và kiểm tra tài nguyên,
 theme và layout TestHost. Các test hiện chưa bao phủ toàn bộ thao tác GUI.
+Kiểm thử khởi tạo QuickScan hiện thất bại vì không tìm thấy tài nguyên
+`StatusBarButton`; style có trong `ButtonStyles.xaml` nhưng dictionary này
+chưa được ghép vào DesignSystem. Test này không kích hoạt `Loaded` hoặc
+nghiệp vụ quét.
 
 `BizNext.TestHost` là ứng dụng độc lập, dùng tài nguyên DesignSystem để xem
 view hiện có của Ghi chú và Lịch & Thời tiết, cùng nút thử cửa sổ cài đặt

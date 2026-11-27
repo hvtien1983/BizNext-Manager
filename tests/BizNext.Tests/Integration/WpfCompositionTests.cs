@@ -55,7 +55,6 @@ public sealed class WpfCompositionTests
                 Assert.Equal("NotesModuleView", Assert.IsAssignableFrom<UserControl>(modules[1].CreateView()).GetType().Name);
                 Assert.Equal("WeatherCalendarModuleView", Assert.IsAssignableFrom<UserControl>(modules[2].CreateView()).GetType().Name);
                 Assert.Equal("biznext.module.quickscan", modules[0].Metadata.Id);
-
                 var host = new BizNext.TestHost.MainWindow();
                 var root = Assert.IsAssignableFrom<UIElement>(host.Content);
                 root.Measure(new Size(1000, 650));
@@ -75,6 +74,9 @@ public sealed class WpfCompositionTests
                 root.Arrange(new Rect(0, 0, 1000, 650));
                 root.UpdateLayout();
                 host.Close();
+                var quickScan = Assert.IsType<QuickScanView>(modules[0].CreateView());
+                Assert.NotNull(quickScan.DataContext);
+                Assert.IsType<TabControl>(quickScan.FindName("MainTabControl"));
                 app.Shutdown();
             }
             catch (Exception exception)
