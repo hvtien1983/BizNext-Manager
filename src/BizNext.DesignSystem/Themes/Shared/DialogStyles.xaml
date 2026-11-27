@@ -36,7 +36,6 @@
         <Setter Property="Orientation" Value="Horizontal" />
         <Setter Property="HorizontalAlignment" Value="Right" />
         <Setter Property="Margin" Value="0,20,0,0" />
-        <Setter Property="Gap" Value="8" />
     </Style>
 
     <!-- Recommendation: For actual Window-based dialogs, use this in code-behind:

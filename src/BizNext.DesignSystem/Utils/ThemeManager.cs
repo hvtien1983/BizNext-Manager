@@ -28,8 +28,9 @@ public static class ThemeManager
             // Remove existing dark/light theme override if present
             var mergedDictionaries = Application.Current.Resources.MergedDictionaries;
             var existingTheme = mergedDictionaries
-                .FirstOrDefault(d => d.Source?.OriginalString?.Contains("DarkTheme") ?? false
-                                      || d.Source?.OriginalString?.Contains("LightTheme") ?? false);
+                .FirstOrDefault(d =>
+                    (d.Source?.OriginalString?.Contains("DarkTheme") ?? false) ||
+                    (d.Source?.OriginalString?.Contains("LightTheme") ?? false));
 
             if (existingTheme != null)
                 mergedDictionaries.Remove(existingTheme);

@@ -52,8 +52,7 @@
                                    Fill="{DynamicResource TextOnPrimaryBrush}"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
-                                   Visibility="Collapsed"
-                                   Radius="1" />
+                                   Visibility="Collapsed" />
 
                         <!-- Label content -->
                         <ContentPresenter x:Name="ContentPresenter"

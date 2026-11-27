@@ -2,8 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:converters="clr-namespace:BizNext.Shell.Converters">
 
-    <!-- Converter for ComboBox display (from Shell) -->
-    <converters:ComboBoxSelectedItemTextConverter x:Key="ComboBoxSelectedItemTextConverter" />
+    <!-- Converter for ComboBox display (from Shell) 
+    <converters:ComboBoxSelectedItemTextConverter x:Key="ComboBoxSelectedItemTextConverter" />-->
 
     <!-- COMBOBOX ITEM [F2: Fluent 2 dropdown item] -->
     <Style x:Key="Fluent.ComboBoxItem" TargetType="ComboBoxItem">

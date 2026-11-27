@@ -41,8 +41,7 @@
                         <!-- Progress indicator -->
                         <Rectangle x:Name="PART_Track"
                                    Fill="{TemplateBinding Foreground}"
-                                   HorizontalAlignment="Left"
-                                   CornerRadius="2" />
+                                   HorizontalAlignment="Left" />
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
