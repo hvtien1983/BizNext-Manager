@@ -2,10 +2,10 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!-- DARK THEME - Override semantic tokens for dark mode -->
 
-    <!-- ACTION COLORS -->
-    <SolidColorBrush x:Key="ActionPrimaryBrush" Color="#7EA0FF" />
-    <SolidColorBrush x:Key="ActionPrimaryHoverBrush" Color="#9AB4FF" />
-    <SolidColorBrush x:Key="ActionPrimarySubtleBrush" Color="#263858" />
+    <!-- ACTION COLORS [WIN: Windows accent color variants for dark] -->
+    <SolidColorBrush x:Key="ActionPrimaryBrush" Color="#60B0FF" />
+    <SolidColorBrush x:Key="ActionPrimaryHoverBrush" Color="#7ABBFF" />
+    <SolidColorBrush x:Key="ActionPrimarySubtleBrush" Color="#1A3A52" />
     <SolidColorBrush x:Key="ActionDangerBrush" Color="#F07878" />
 
     <!-- TEXT COLORS -->
@@ -40,7 +40,7 @@
     <SolidColorBrush x:Key="BorderSubtleBrush" Color="#2D3646" />
     <SolidColorBrush x:Key="BorderHeaderBrush" Color="#2D3646" />
     <SolidColorBrush x:Key="BorderPreviewBrush" Color="#343F52" />
-    <SolidColorBrush x:Key="BorderFocusBrush" Color="#7EA0FF" />
+    <SolidColorBrush x:Key="BorderFocusBrush" Color="#60B0FF" />
     <SolidColorBrush x:Key="BorderWarningBrush" Color="#6A542C" />
 
 </ResourceDictionary>

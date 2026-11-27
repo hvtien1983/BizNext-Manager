@@ -3,16 +3,16 @@
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
     <!-- LIGHT THEME - Semantic Design Tokens (Light theme) -->
 
-    <!-- ACTION COLORS -->
-    <SolidColorBrush x:Key="ActionPrimaryBrush" Color="#356AE6" />
-    <SolidColorBrush x:Key="ActionPrimaryHoverBrush" Color="#2858C7" />
-    <SolidColorBrush x:Key="ActionPrimarySubtleBrush" Color="#EAF0FF" />
+    <!-- ACTION COLORS [WIN: Windows accent color] -->
+    <SolidColorBrush x:Key="ActionPrimaryBrush" Color="#0078D4" />
+    <SolidColorBrush x:Key="ActionPrimaryHoverBrush" Color="#106EBE" />
+    <SolidColorBrush x:Key="ActionPrimarySubtleBrush" Color="#E7F0F9" />
     <SolidColorBrush x:Key="ActionDangerBrush" Color="#C44747" />
 
-    <!-- TEXT COLORS -->
+    <!-- TEXT COLORS [F2: WCAG AA ≥ 4.5:1 on white backgrounds] -->
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="#172033" />
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="#536078" />
-    <SolidColorBrush x:Key="TextMutedBrush" Color="#748099" />
+    <SolidColorBrush x:Key="TextMutedBrush" Color="#5B6B7F" />
     <SolidColorBrush x:Key="TextOnPrimaryBrush" Color="#FFFFFF" />
     <SolidColorBrush x:Key="TextSuccessBrush" Color="#278354" />
     <SolidColorBrush x:Key="TextDangerBrush" Color="#C44747" />
@@ -41,23 +41,40 @@
     <SolidColorBrush x:Key="BorderSubtleBrush" Color="#EEF0F4" />
     <SolidColorBrush x:Key="BorderHeaderBrush" Color="#E9EDF3" />
     <SolidColorBrush x:Key="BorderPreviewBrush" Color="#E8ECF3" />
-    <SolidColorBrush x:Key="BorderFocusBrush" Color="#356AE6" />
+    <SolidColorBrush x:Key="BorderFocusBrush" Color="#0078D4" />
     <SolidColorBrush x:Key="BorderWarningBrush" Color="#F4D9A6" />
 
-    <!-- SHAPE TOKENS -->
-    <CornerRadius x:Key="ControlCornerRadius">8</CornerRadius>
-    <CornerRadius x:Key="CardCornerRadius">12</CornerRadius>
+    <!-- SHAPE TOKENS [WIN: Windows 4px control / 8px overlay] -->
+    <CornerRadius x:Key="ControlCornerRadius">4</CornerRadius>
+    <CornerRadius x:Key="CardCornerRadius">8</CornerRadius>
+    <CornerRadius x:Key="OverlayCornerRadius">8</CornerRadius>
     <CornerRadius x:Key="PillCornerRadius">999</CornerRadius>
 
-    <!-- DENSITY TOKENS - Compact -->
+    <!-- DENSITY TOKENS - Compact [WIN: minimum font 12 Regular / 14 Semibold] -->
     <sys:Double x:Key="CompactControlHeight">36</sys:Double>
     <sys:Double x:Key="CompactSecondaryButtonHeight">34</sys:Double>
     <sys:Double x:Key="CompactPrimaryButtonHeight">38</sys:Double>
     <Thickness x:Key="CompactCardPadding">10</Thickness>
     <sys:Double x:Key="CompactSectionGap">12</sys:Double>
     <sys:Double x:Key="CompactFieldGap">12</sys:Double>
-    <sys:Double x:Key="CompactLabelFontSize">10</sys:Double>
-    <sys:Double x:Key="CompactControlFontSize">11</sys:Double>
-    <sys:Double x:Key="CompactCaptionFontSize">10</sys:Double>
+    <sys:Double x:Key="CompactLabelFontSize">12</sys:Double>
+    <sys:Double x:Key="CompactControlFontSize">12</sys:Double>
+    <sys:Double x:Key="CompactCaptionFontSize">12</sys:Double>
+
+    <!-- SPACING TOKENS [TOKENS: 4px system scale] -->
+    <Thickness x:Key="Spacing2XSmall">4</Thickness>
+    <Thickness x:Key="SpacingXSmall">8</Thickness>
+    <Thickness x:Key="SpacingSmall">12</Thickness>
+    <Thickness x:Key="SpacingMedium">16</Thickness>
+    <Thickness x:Key="SpacingLarge">20</Thickness>
+    <Thickness x:Key="SpacingXLarge">24</Thickness>
+
+    <!-- MOTION TOKENS [WIN: durations 83/167/250ms, easing (0,0,0,1) in / (1,0,1,1) out] -->
+    <sys:Int32 x:Key="MotionDurationEnter">83</sys:Int32>
+    <sys:Int32 x:Key="MotionDurationMedium">167</sys:Int32>
+    <sys:Int32 x:Key="MotionDurationExit">250</sys:Int32>
+
+    <!-- FOCUS RING [F2: stroke thicker than border] -->
+    <Thickness x:Key="FocusRingStrokeThickness">2</Thickness>
 
 </ResourceDictionary>

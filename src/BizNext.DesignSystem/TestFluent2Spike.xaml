@@ -1,0 +1,64 @@
+<Window x:Class="BizNext.DesignSystem.TestFluent2Spike"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Architecture A Spike: Fluent Theme + Token Override"
+        Width="600"
+        Height="400"
+        WindowStartupLocation="CenterScreen">
+    <!-- SPIKE PURPOSE: Verify (1) built-in Fluent theme loads, (2) token override works,
+         (3) Light/Dark toggle works, (4) ControlCornerRadius and other tokens apply correctly.
+
+         ARCHITECTURE A: Use WPF's built-in Fluent theme (ThemeMode) + BizNext token layer.
+         This test verifies that approach without full app rebuild. -->
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <!-- Merge BizNext tokens (which override defaults) -->
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/BizNext.DesignSystem;component/Themes/DesignTokens.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <StackPanel Margin="20" VerticalAlignment="Top">
+        <TextBlock FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}">
+            Architecture A Verification
+        </TextBlock>
+
+        <!-- TEST 1: Token override - ControlCornerRadius should be 4px (not 8px old value) -->
+        <Border x:Name="TestCornerRadius"
+                Background="{DynamicResource SurfaceDefaultBrush}"
+                BorderBrush="{DynamicResource BorderDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="{DynamicResource ControlCornerRadius}"
+                Padding="12"
+                Margin="0,12,0,0">
+            <TextBlock Foreground="{DynamicResource TextPrimaryBrush}">
+                Test 1: CornerRadius = 4px (new value)
+            </TextBlock>
+        </Border>
+
+        <!-- TEST 2: Brand color - ActionPrimaryBrush should be Windows accent #0078D4 (not #356AE6) -->
+        <Button Background="{DynamicResource ActionPrimaryBrush}"
+                Foreground="{DynamicResource TextOnPrimaryBrush}"
+                Padding="12,8"
+                Margin="0,12,0,0">
+            Test 2: Brand Color = Windows Accent #0078D4
+        </Button>
+
+        <!-- TEST 3: TextMuted contrast - should be ≥ 4.5:1 on white (#5B6B7F instead of #748099) -->
+        <TextBlock Foreground="{DynamicResource TextMutedBrush}" Margin="0,12,0,0">
+            Test 3: TextMuted = #5B6B7F (contrast ≥ 4.5:1)
+        </TextBlock>
+
+        <!-- TEST 4: Light/Dark toggle (manual test via ThemeMode) -->
+        <StackPanel Margin="0,12,0,0" Orientation="Horizontal">
+            <Button x:Name="LightButton" Padding="8,4" Margin="0,0,8,0">Light</Button>
+            <Button x:Name="DarkButton" Padding="8,4">Dark</Button>
+        </StackPanel>
+
+        <TextBlock Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,12,0,0" FontSize="11">
+            Note: Click Light/Dark to toggle ThemeMode. Fluent theme should update all colors + shapes automatically.
+        </TextBlock>
+    </StackPanel>
+</Window>
