@@ -13,7 +13,11 @@ public sealed class QuickScanModule(
         "biznext.module.quickscan",
         "QuickScan",
         "Quét tài liệu, ghép trang và quản lý PDF.",
-        "Tài liệu");
+        "Tài liệu")
+    {
+        Icon = "▤",
+        Order = 1
+    };
 
     public FrameworkElement CreateView() => new QuickScanView(
         applicationSettings,

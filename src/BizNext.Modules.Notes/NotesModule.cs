@@ -11,7 +11,11 @@ public sealed class NotesModule : IBizNextModule
         "biznext.module.notes",
         "Ghi chú",
         "Ghi lại ý tưởng và công việc cần nhớ.",
-        "Năng suất");
+        "Năng suất")
+    {
+        Icon = "✎",
+        Order = 2
+    };
 
     public FrameworkElement CreateView() => new NotesModuleView();
 }

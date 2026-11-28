@@ -1,6 +1,8 @@
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using BizNext.Contracts;
 using BizNext.Contracts.Models;
 using BizNext.Infrastructure.Modules;
 using BizNext.Infrastructure.Settings;
@@ -16,6 +18,8 @@ public partial class MainWindow : Window
     private readonly string? _settingsLoadError;
     private readonly Dictionary<string, FrameworkElement> _viewCache =
         new(StringComparer.OrdinalIgnoreCase);
+    private bool _suppressSelection;
+
     public MainWindow(
         ModuleCatalog moduleCatalog,
         ModuleNavigationService navigation,
@@ -35,6 +39,10 @@ public partial class MainWindow : Window
         _settingsStore = settingsStore;
         _settings = settings;
         _settingsLoadError = settingsLoadError;
+
+        // Data-driven navigation: sidebar và Dashboard sinh từ catalog.
+        SidebarModuleList.ItemsSource = _moduleCatalog.Modules;
+        DashboardCards.ItemsSource = _moduleCatalog.Modules;
 
         Loaded += MainWindow_Loaded;
     }
@@ -163,13 +171,38 @@ public partial class MainWindow : Window
 
     private void SetNavigationSelection(string? moduleId)
     {
+        _suppressSelection = true;
         DashboardNavigation.IsChecked = moduleId is null;
-        QuickScanNavigation.IsChecked =
-            string.Equals(moduleId, "biznext.module.quickscan", StringComparison.OrdinalIgnoreCase);
-        NotesNavigation.IsChecked =
-            string.Equals(moduleId, "biznext.module.notes", StringComparison.OrdinalIgnoreCase);
-        WeatherNavigation.IsChecked =
-            string.Equals(moduleId, "biznext.module.weathercalendar", StringComparison.OrdinalIgnoreCase);
+        SidebarModuleList.SelectedItem = moduleId is null
+            ? null
+            : _moduleCatalog.Modules.FirstOrDefault(module =>
+                string.Equals(module.Metadata.Id, moduleId, StringComparison.OrdinalIgnoreCase));
+        _suppressSelection = false;
+    }
+
+    private void SidebarModuleList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_suppressSelection)
+        {
+            return;
+        }
+
+        if (SidebarModuleList.SelectedItem is IBizNextModule module)
+        {
+            NavigateToModule(module.Metadata.Id);
+            _settings.LastSelectedModuleId = module.Metadata.Id;
+            _ = SaveSettingsAsync();
+        }
+    }
+
+    private void ModuleCard_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: IBizNextModule module })
+        {
+            NavigateToModule(module.Metadata.Id);
+            _settings.LastSelectedModuleId = module.Metadata.Id;
+            _ = SaveSettingsAsync();
+        }
     }
 
     private void ShowSettingsSaveError(Exception exception)

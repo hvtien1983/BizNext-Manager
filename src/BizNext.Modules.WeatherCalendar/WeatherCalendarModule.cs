@@ -11,7 +11,11 @@ public sealed class WeatherCalendarModule : IBizNextModule
         "biznext.module.weathercalendar",
         "Lịch & Thời tiết",
         "Theo dõi lịch trình và thông tin thời tiết.",
-        "Tiện ích");
+        "Tiện ích")
+    {
+        Icon = "◷",
+        Order = 3
+    };
 
     public FrameworkElement CreateView() => new WeatherCalendarModuleView();
 }

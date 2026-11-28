@@ -27,7 +27,8 @@ public sealed class ModuleCatalog
             }
         }
 
-        Modules = Array.AsReadOnly(_modules.Values.ToArray());
+        // Sắp xếp theo Order (ổn định, giữ thứ tự đăng ký khi bằng nhau).
+        Modules = Array.AsReadOnly(_modules.Values.OrderBy(module => module.Metadata.Order).ToArray());
     }
 
     public IReadOnlyList<IBizNextModule> Modules { get; }

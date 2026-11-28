@@ -26,6 +26,16 @@ public sealed class ModuleNavigationTests
     }
 
     [Fact]
+    public void CatalogOrdersModulesByMetadataOrder()
+    {
+        var second = new TestModule("second", order: 2);
+        var first = new TestModule("first", order: 1);
+        var catalog = new ModuleCatalog([second, first]);
+
+        Assert.Equal(new[] { first, second }, catalog.Modules);
+    }
+
+    [Fact]
     public void NavigationRaisesOnlyForChangesAndPreservesSelectionOnInvalidId()
     {
         var service = new ModuleNavigationService(new ModuleCatalog([new TestModule("notes")]));

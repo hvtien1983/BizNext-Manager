@@ -70,39 +70,47 @@
                                FontSize="{StaticResource CompactCaptionFontSize}"
                                FontWeight="Bold"
                                Foreground="{DynamicResource TextMutedBrush}" />
-                    <RadioButton x:Name="QuickScanNavigation"
-                                 GroupName="Sidebar"
-                                 Tag="biznext.module.quickscan"
-                                 Style="{StaticResource SidebarNavigationButton}"
-                                 Click="NavigationButton_Click"
-                                 AutomationProperties.Name="QuickScan">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="▤" Width="24" FontSize="15" />
-                            <TextBlock Text="QuickScan" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="NotesNavigation"
-                                 GroupName="Sidebar"
-                                 Tag="biznext.module.notes"
-                                 Style="{StaticResource SidebarNavigationButton}"
-                                 Click="NavigationButton_Click"
-                                 AutomationProperties.Name="Ghi chú">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="✎" Width="24" FontSize="15" />
-                            <TextBlock Text="Ghi chú" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="WeatherNavigation"
-                                 GroupName="Sidebar"
-                                 Tag="biznext.module.weathercalendar"
-                                 Style="{StaticResource SidebarNavigationButton}"
-                                 Click="NavigationButton_Click"
-                                 AutomationProperties.Name="Lịch và thời tiết">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="◷" Width="24" FontSize="15" />
-                            <TextBlock Text="Lịch &amp; Thời tiết" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </RadioButton>
+                    <ListBox x:Name="SidebarModuleList"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                             SelectionChanged="SidebarModuleList_SelectionChanged">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListBoxItem">
+                                            <Border x:Name="Nav"
+                                                    Background="Transparent"
+                                                    CornerRadius="{StaticResource ControlCornerRadius}"
+                                                    Padding="14,11"
+                                                    Margin="0,3">
+                                                <ContentPresenter VerticalAlignment="Center" />
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Nav" Property="Background" Value="{DynamicResource SurfaceHoverBrush}" />
+                                                </Trigger>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter Property="Foreground" Value="{DynamicResource ActionPrimaryBrush}" />
+                                                    <Setter TargetName="Nav" Property="Background" Value="{DynamicResource SurfaceSelectedBrush}" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Metadata.Icon}" Width="24" FontSize="15" />
+                                    <TextBlock Text="{Binding Metadata.Name}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
                 </StackPanel>
 
                 <StackPanel Grid.Row="4" VerticalAlignment="Bottom">
@@ -179,104 +187,48 @@
                                        FontSize="14"
                                        Foreground="{DynamicResource TextMutedBrush}" />
                         </StackPanel>
-                        <UniformGrid Grid.Row="2" Columns="3">
-                            <Button Tag="biznext.module.quickscan"
-                                    Click="NavigationButton_Click"
-                                    Style="{StaticResource DashboardModuleCard}"
-                                    Margin="0,0,8,0"
-                                    AutomationProperties.Name="Mở tiện ích QuickScan">
-                                <StackPanel>
-                                    <Border Width="44"
-                                            Height="44"
-                                            CornerRadius="{StaticResource ControlCornerRadius}"
-                                            Background="{DynamicResource ActionPrimarySubtleBrush}">
-                                        <TextBlock Text="▤"
-                                                   FontSize="22"
-                                                   Foreground="{DynamicResource ActionPrimaryBrush}"
-                                                   HorizontalAlignment="Center"
-                                                   VerticalAlignment="Center" />
-                                    </Border>
-                                    <TextBlock Text="QuickScan"
-                                               Margin="0,16,0,0"
-                                               FontSize="16"
-                                               FontWeight="Bold" />
-                                    <TextBlock Text="Quét tài liệu, tạo PDF và quản lý thư viện."
-                                               Margin="0,6,0,0"
-                                               FontSize="12"
-                                               Foreground="{DynamicResource TextMutedBrush}"
-                                               TextWrapping="Wrap" />
-                                    <TextBlock Text="MỞ TIỆN ÍCH  →"
-                                               Margin="0,18,0,0"
-                                               FontSize="10"
-                                               FontWeight="Bold"
-                                               Foreground="{DynamicResource ActionPrimaryBrush}" />
-                                </StackPanel>
-                            </Button>
-                            <Button Tag="biznext.module.notes"
-                                    Click="NavigationButton_Click"
-                                    Style="{StaticResource DashboardModuleCard}"
-                                    Margin="4,0"
-                                    AutomationProperties.Name="Mở tiện ích Ghi chú">
-                                <StackPanel>
-                                    <Border Width="44"
-                                            Height="44"
-                                            CornerRadius="{StaticResource ControlCornerRadius}"
-                                            Background="{DynamicResource SurfaceEmptyBrush}">
-                                        <TextBlock Text="✎"
-                                                   FontSize="21"
-                                                   Foreground="{DynamicResource TextSecondaryBrush}"
-                                                   HorizontalAlignment="Center"
-                                                   VerticalAlignment="Center" />
-                                    </Border>
-                                    <TextBlock Text="Ghi chú"
-                                               Margin="0,16,0,0"
-                                               FontSize="16"
-                                               FontWeight="Bold" />
-                                    <TextBlock Text="Lưu ý tưởng và việc cần làm."
-                                               Margin="0,6,0,0"
-                                               FontSize="12"
-                                               Foreground="{DynamicResource TextMutedBrush}"
-                                               TextWrapping="Wrap" />
-                                    <TextBlock Text="MỞ TIỆN ÍCH  →"
-                                               Margin="0,18,0,0"
-                                               FontSize="10"
-                                               FontWeight="Bold"
-                                               Foreground="{DynamicResource ActionPrimaryBrush}" />
-                                </StackPanel>
-                            </Button>
-                            <Button Tag="biznext.module.weathercalendar"
-                                    Click="NavigationButton_Click"
-                                    Style="{StaticResource DashboardModuleCard}"
-                                    Margin="8,0,0,0"
-                                    AutomationProperties.Name="Mở tiện ích Lịch và Thời tiết">
-                                <StackPanel>
-                                    <Border Width="44"
-                                            Height="44"
-                                            CornerRadius="{StaticResource ControlCornerRadius}"
-                                            Background="{DynamicResource SurfaceEmptyBrush}">
-                                        <TextBlock Text="◷"
-                                                   FontSize="21"
-                                                   Foreground="{DynamicResource TextSecondaryBrush}"
-                                                   HorizontalAlignment="Center"
-                                                   VerticalAlignment="Center" />
-                                    </Border>
-                                    <TextBlock Text="Lịch &amp; Thời tiết"
-                                               Margin="0,16,0,0"
-                                               FontSize="16"
-                                               FontWeight="Bold" />
-                                    <TextBlock Text="Xem lịch trình và thời tiết."
-                                               Margin="0,6,0,0"
-                                               FontSize="12"
-                                               Foreground="{DynamicResource TextMutedBrush}"
-                                               TextWrapping="Wrap" />
-                                    <TextBlock Text="MỞ TIỆN ÍCH  →"
-                                               Margin="0,18,0,0"
-                                               FontSize="10"
-                                               FontWeight="Bold"
-                                               Foreground="{DynamicResource ActionPrimaryBrush}" />
-                                </StackPanel>
-                            </Button>
-                        </UniformGrid>
+                        <ItemsControl x:Name="DashboardCards" Grid.Row="2">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="3" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Style="{StaticResource DashboardModuleCard}"
+                                            Margin="0,0,8,0"
+                                            Click="ModuleCard_Click"
+                                            AutomationProperties.Name="{Binding Metadata.Name}">
+                                        <StackPanel>
+                                            <Border Width="44"
+                                                    Height="44"
+                                                    CornerRadius="{StaticResource ControlCornerRadius}"
+                                                    Background="{DynamicResource ActionPrimarySubtleBrush}">
+                                                <TextBlock Text="{Binding Metadata.Icon}"
+                                                           FontSize="22"
+                                                           Foreground="{DynamicResource ActionPrimaryBrush}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" />
+                                            </Border>
+                                            <TextBlock Text="{Binding Metadata.Name}"
+                                                       Margin="0,16,0,0"
+                                                       FontSize="16"
+                                                       FontWeight="Bold" />
+                                            <TextBlock Text="{Binding Metadata.Description}"
+                                                       Margin="0,6,0,0"
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource TextMutedBrush}"
+                                                       TextWrapping="Wrap" />
+                                            <TextBlock Text="MỞ TIỆN ÍCH  →"
+                                                       Margin="0,18,0,0"
+                                                       FontSize="10"
+                                                       FontWeight="Bold"
+                                                       Foreground="{DynamicResource ActionPrimaryBrush}" />
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                         <Border Grid.Row="4"
                                 Padding="18"
                                 Background="{DynamicResource SurfaceDefaultBrush}"
