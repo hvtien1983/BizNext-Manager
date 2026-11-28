@@ -8,13 +8,13 @@ using System.Windows.Media;
 using BizNext.Contracts;
 using BizNext.Contracts.Models;
 using BizNext.DesignSystem.Utils;
+using BizNext.Infrastructure.Modules;
 using BizNext.Infrastructure.Settings;
 using BizNext.Infrastructure.Storage;
-using BizNext.Modules.Notes;
 using BizNext.Modules.QuickScan;
 using BizNext.Modules.QuickScan.Models;
-using BizNext.Modules.WeatherCalendar;
 using BizNext.Tests.TestSupport;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BizNext.Tests.Integration;
 
@@ -54,17 +54,25 @@ public sealed class WpfCompositionTests
                 ThemeManager.SetTheme(AppTheme.Light);
                 Assert.Equal(light, ((SolidColorBrush)app.FindResource("SurfaceCanvasBrush")).Color);
 
-                IBizNextModule[] modules =
-                [
-                    new QuickScanModule(new ApplicationSettings(), null),
-                    new NotesModule(),
-                    new WeatherCalendarModule()
-                ];
                 using var temp = new TemporaryDirectory();
                 var store = new ShellSettingsStore(Path.Combine(temp.Path, "shell.json"), new JsonFileStorage());
-                var shell = new BizNext.Shell.MainWindow(
-                    modules, store,
-                    new ShellSettings { LastSelectedModuleId = "biznext.module.quickscan" }, null);
+                var savedSettings = new ShellSettings { LastSelectedModuleId = "biznext.module.quickscan" };
+                using var services = BizNext.Shell.ShellComposition.Create(
+                    new ApplicationSettings(), null, store, savedSettings, null);
+                var modules = services.GetServices<IBizNextModule>().ToArray();
+                var catalog = services.GetRequiredService<ModuleCatalog>();
+                var navigation = services.GetRequiredService<ModuleNavigationService>();
+                Assert.Equal(new[]
+                {
+                    "biznext.module.quickscan", "biznext.module.notes", "biznext.module.weathercalendar"
+                }, modules.Select(module => module.Metadata.Id));
+                Assert.Equal(modules, catalog.Modules);
+                Assert.Same(catalog, services.GetRequiredService<ModuleCatalog>());
+                Assert.Same(navigation, services.GetRequiredService<ModuleNavigationService>());
+                Assert.Same(store, services.GetRequiredService<ShellSettingsStore>());
+                Assert.Same(savedSettings, services.GetRequiredService<ShellSettings>());
+                var shell = services.GetRequiredService<BizNext.Shell.MainWindow>();
+                Assert.Same(shell, services.GetRequiredService<BizNext.Shell.MainWindow>());
                 var settingsDialog = new BizNext.Shell.DashboardSettingsWindow(ThemePreference.Light);
                 Assert.NotNull(shell.Icon);
                 Assert.NotNull(settingsDialog.Icon);
@@ -72,10 +80,17 @@ public sealed class WpfCompositionTests
                 shell.Arrange(new Rect(0, 0, 1360, 820));
                 shell.UpdateLayout();
                 shell.RaiseEvent(new RoutedEventArgs(FrameworkElement.LoadedEvent));
+                Assert.Equal("biznext.module.quickscan", navigation.SelectedModuleId);
                 var quickScan = Assert.IsType<QuickScanView>(
                     Assert.IsType<ContentControl>(shell.FindName("ContentHost")).Content);
                 Assert.NotNull(quickScan.DataContext);
                 Assert.IsType<TabControl>(quickScan.FindName("MainTabControl"));
+                navigation.SelectModule("biznext.module.notes");
+                Assert.Equal("NotesModuleView",
+                    Assert.IsAssignableFrom<UserControl>(
+                        Assert.IsType<ContentControl>(shell.FindName("ContentHost")).Content).GetType().Name);
+                navigation.SelectModule("biznext.module.quickscan");
+                Assert.Same(quickScan, Assert.IsType<ContentControl>(shell.FindName("ContentHost")).Content);
                 shell.Measure(new Size(1200, 720));
                 shell.Arrange(new Rect(0, 0, 1200, 720));
                 shell.UpdateLayout();

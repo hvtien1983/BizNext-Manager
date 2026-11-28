@@ -4,16 +4,13 @@ using System.Security;
 using System.Text.Json;
 using System.Windows;
 using Microsoft.Win32;
-using BizNext.Contracts;
 using BizNext.Contracts.Models;
 using BizNext.DesignSystem.Utils;
 using BizNext.Infrastructure.Settings;
 using BizNext.Infrastructure.Storage;
-using BizNext.Modules.Notes;
-using BizNext.Modules.QuickScan;
-using BizNext.Modules.WeatherCalendar;
 using BizNext.Modules.QuickScan.Models;
 using BizNext.Modules.QuickScan.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BizNext.Shell;
 
@@ -21,6 +18,7 @@ public partial class App : Application
 {
     private const string PersonalizationRegistryPath =
         @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
+    private ServiceProvider? _services;
 
     protected override async void OnStartup(StartupEventArgs e)
     {
@@ -86,15 +84,17 @@ public partial class App : Application
 
         ApplyTheme(shellSettings.Theme.Value);
 
-        var moduleList = new IBizNextModule[]
-        {
-            new QuickScanModule(settings, settingsLoadError),
-            new NotesModule(),
-            new WeatherCalendarModule()
-        };
-        var mainWindow = new MainWindow(moduleList, shellSettingsStore, shellSettings, shellSettingsLoadError);
+        _services = ShellComposition.Create(
+            settings, settingsLoadError, shellSettingsStore, shellSettings, shellSettingsLoadError);
+        var mainWindow = _services.GetRequiredService<MainWindow>();
         MainWindow = mainWindow;
         mainWindow.Show();
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        _services?.Dispose();
+        base.OnExit(e);
     }
 
     public static void ApplyTheme(ThemePreference preference)

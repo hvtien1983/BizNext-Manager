@@ -39,6 +39,21 @@ public sealed class JsonFileStorageTests
     }
 
     [Fact]
+    public async Task AtomicWriteReplacesExistingFile()
+    {
+        using var temp = new TemporaryDirectory();
+        var path = Path.Combine(temp.Path, "settings.json");
+        var storage = new JsonFileStorage();
+        await storage.WriteAtomicallyAsync(path, new ShellSettings { LastSelectedModuleId = "notes" });
+
+        await storage.WriteAtomicallyAsync(path, new ShellSettings { LastSelectedModuleId = "scan" });
+
+        var loaded = await storage.ReadAsync(path, new ShellSettings());
+        Assert.Equal("scan", loaded.LastSelectedModuleId);
+        Assert.Equal(new[] { path }, Directory.GetFiles(temp.Path));
+    }
+
+    [Fact]
     public async Task FailedSerializationLeavesExistingFileAndCleansTemporaryFile()
     {
         using var temp = new TemporaryDirectory();

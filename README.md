@@ -47,6 +47,9 @@ Test ghi file vào thư mục tạm riêng, dùng fake scanner, không dùng má
 hoặc dữ liệu QuickScan thật. Test WPF chạy trên STA và kiểm tra tài nguyên,
 theme và layout Shell/TestHost. Các test hiện chưa bao phủ toàn bộ thao tác GUI.
 Kiểm thử khởi tạo QuickScan không kích hoạt `Loaded` hoặc nghiệp vụ quét.
+Baseline bước 0 và checklist kiểm thử thủ công, bao gồm yêu cầu cô lập dữ liệu
+trước khi dùng fake scanner, nằm trong [docs/baseline.md](./docs/baseline.md)
+và [docs/smoke-test.md](./docs/smoke-test.md).
 
 `BizNext.TestHost` là ứng dụng độc lập, dùng tài nguyên DesignSystem để xem
 view hiện có của Ghi chú và Lịch & Thời tiết, cùng nút thử cửa sổ cài đặt

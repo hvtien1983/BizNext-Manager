@@ -41,9 +41,11 @@ assembly/plugin loader.
 
 ## Module lifecycle and navigation
 
-1. `App` loads the Shell settings and the existing QuickScan settings,
-   resolves and applies the theme (see *UI and theming*), and creates the
-   built-in module instances.
+1. `App` loads the existing QuickScan settings and then Shell settings, resolves
+   and applies the theme (see *UI and theming*), and builds the Shell's DI
+   container. The composition root registers the built-in modules, catalog,
+   navigation service, settings and main window as singletons. The container
+   is disposed when the application exits.
 2. `ModuleCatalog` rejects missing or duplicate module IDs.
 3. `ModuleNavigationService` validates a requested ID and publishes selection
    changes.

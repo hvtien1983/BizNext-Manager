@@ -1,7 +1,6 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using BizNext.Contracts;
 using BizNext.Contracts.Models;
 using BizNext.Infrastructure.Modules;
 using BizNext.Infrastructure.Settings;
@@ -18,18 +17,20 @@ public partial class MainWindow : Window
     private readonly Dictionary<string, FrameworkElement> _viewCache =
         new(StringComparer.OrdinalIgnoreCase);
     public MainWindow(
-        IEnumerable<IBizNextModule> modules,
+        ModuleCatalog moduleCatalog,
+        ModuleNavigationService navigation,
         ShellSettingsStore settingsStore,
         ShellSettings settings,
         string? settingsLoadError)
     {
-        ArgumentNullException.ThrowIfNull(modules);
+        ArgumentNullException.ThrowIfNull(moduleCatalog);
+        ArgumentNullException.ThrowIfNull(navigation);
         ArgumentNullException.ThrowIfNull(settingsStore);
         ArgumentNullException.ThrowIfNull(settings);
         InitializeComponent();
 
-        _moduleCatalog = new ModuleCatalog(modules);
-        _navigation = new ModuleNavigationService(_moduleCatalog);
+        _moduleCatalog = moduleCatalog;
+        _navigation = navigation;
         _navigation.SelectedModuleChanged += ShowModule;
         _settingsStore = settingsStore;
         _settings = settings;
