@@ -2,12 +2,14 @@
 
 > Living handoff: cập nhật tài liệu này khi kiến trúc, hành vi hoặc trạng thái
 > dự án thay đổi. Lần đối chiếu mã nguồn gần nhất: **2026-11-28**.
+> Notes giai đoạn 1 được thêm sau lần đối chiếu này (xem mục "Notes — behavior
+> and data safety"), chưa được xác minh bằng build/test/smoke.
 
 ## Project overview
 
 BizNext Manager là ứng dụng Windows WPF trên .NET 10, với Dashboard host các
 module tiện ích. `BizNext.Shell` là executable; QuickScan đang có nghiệp vụ
-quét/tạo PDF/thư viện. Notes và Weather/Calendar hiện là module placeholder.
+quét/tạo PDF/thư viện. Notes đã có giai đoạn 1 (ghi chú, notebook, tìm kiếm, ghim, tự lưu); Weather/Calendar vẫn là module placeholder.
 `ScanCore` và `ScanDevice` là project hỗ trợ QuickScan, không phải module
 Dashboard. Chưa có widget, account, cloud sync, dynamic plugin loader hay
 Generic Host.
@@ -21,7 +23,8 @@ Generic Host.
 - `BizNext.DesignSystem`: WPF semantic tokens, Light/Dark themes, shared styles,
   SVG component và converters.
 - `BizNext.Modules.QuickScan`: view, viewmodel, scanner/PDF/library behavior.
-- `BizNext.Modules.Notes`, `BizNext.Modules.WeatherCalendar`: placeholder views.
+- `BizNext.Modules.Notes`: Models, Services (`JsonNoteRepository` dùng `JsonFileStorage`), ViewModels, Commands và `NotesView`; tham chiếu Contracts, DesignSystem và Infrastructure.
+- `BizNext.Modules.WeatherCalendar`: placeholder view.
 - `ScanCore`: `DocumentItem`, JSON library, PDF storage helper.
 - `ScanDevice`: scanner contract, WIA/fake implementation, scanner profile store.
 - `BizNext.Shell`: startup, DI composition, Dashboard, navigation, theme.
@@ -92,6 +95,31 @@ Shell có migration theme một lần từ `ApplicationSettings.Theme` cũ sang
 `ShellSettings.Theme` khi Shell chưa có theme. Các file PDF, thư viện và
 scanner profiles không được migrate/xóa bởi thay đổi này.
 
+## Notes — behavior and data safety
+
+Trạng thái: giai đoạn 1 đã viết trong code (chi tiết ở `PROJECT_SUMMARY.md`
+mục 6A); chưa xác minh bằng build, test và smoke thủ công.
+
+- Dữ liệu: `%LocalAppData%\BizNext-Manager\Notes\notes.json`, một file JSON
+  chứa notebook và ghi chú, ghi nguyên tử qua `JsonFileStorage`.
+- Đường dẫn dữ liệu truyền qua constructor (`NotesModule(string)`,
+  `JsonNoteRepository(storage, path)`), không gán cứng trong ViewModel hay
+  repository, để test và TestHost dùng thư mục tạm.
+- Nội dung ghi chú lưu dạng Markdown; trình soạn hiện là TextBox thuần.
+- Note và Notebook dùng Guid, thời gian UTC và xóa mềm (`DeletedAtUtc`) để
+  chuẩn bị đồng bộ cloud.
+- Xóa notebook thì ghi chú bên trong (kể cả ghi chú đã ở thùng rác) chuyển về
+  "chưa phân loại", không xóa theo (quyết định phương án A).
+- Nếu nạp dữ liệu lỗi thì không tự lưu, để không ghi đè dữ liệu cũ bằng dữ
+  liệu rỗng.
+- Tự lưu sau 1,5 giây kể từ lần sửa cuối và khi view `Unloaded`. Tắt app trong
+  vòng 1,5 giây sau lần gõ cuối có thể mất ký tự cuối.
+- Module không tham chiếu module khác: Notes có `RelayCommand` riêng thay vì
+  dùng của QuickScan; có thể gom về chỗ dùng chung sau.
+
+Việc tiếp theo (đã thống nhất thứ tự, chưa làm): thùng rác (xem, khôi phục, xóa
+hẳn), lưu khi thoát app, Tag, xem trước Markdown, rồi widget Dashboard.
+
 ## Design system reference
 
 Các style XAML được merge trong DesignSystem bao gồm buttons, input controls,
@@ -120,6 +148,13 @@ module catalog/navigation (3), QuickScan service/command (5), WPF composition
 QuickScan view-construction test không kích hoạt `Loaded` hoặc quét thật.
 `tests/BizNext.TestHost` là preview app cho một số component/module placeholder,
 không phải QuickScan GUI harness.
+
+Notes chưa có test riêng, số test vẫn là 14. `WpfCompositionTests` kiểm tra tên
+kiểu view Notes là `NotesView` (trước đây là `NotesModuleView`). View Notes nạp
+`notes.json` khi `Loaded`, nên `BizNext.TestHost` chỉ được tạo `NotesModule` bằng
+constructor `NotesModule(string)` với thư mục tạm, không dùng constructor mặc
+định (sẽ đọc và ghi dữ liệu thật). Mô tả "module placeholder" của TestHost ở
+trên chỉ còn đúng với Weather/Calendar.
 
 Baseline lịch sử: 13/13 test trên commit gốc `42860dc`, tăng thành 14/14 sau
 test overwrite; bước 1A có Release build 0 warning/0 error được ghi nhận.
@@ -166,6 +201,14 @@ commit. Các file đã có thay đổi gồm `PROJECT_CONTEXT.md`, `README.md`,
 `src/BizNext.Shell/ShellComposition.cs`. Giữ nguyên các thay đổi này; không
 reset/checkout hoặc ghi đè nội dung chưa commit.
 
+Notes giai đoạn 1 nằm trên nhánh `feature/notes`, tạo từ `refactor/three-tier`,
+chưa commit tại thời điểm viết. Ngoài module Notes chỉ sửa
+`tests/BizNext.Tests/Integration/WpfCompositionTests.cs` (tên kiểu view Notes) và
+thêm tham chiếu Infrastructure vào `BizNext.Modules.Notes.csproj`. Phạm vi Notes
+do người dùng duyệt trực tiếp trong quá trình làm việc, không thuộc các bước
+phương án B. Các thay đổi chưa commit của bước 0/1A ở trên vẫn phải được giữ
+nguyên.
+
 ## Current documentation map
 
 - [`PROJECT_SUMMARY.md`](./PROJECT_SUMMARY.md): inventory chi tiết files,
@@ -175,3 +218,10 @@ reset/checkout hoặc ghi đè nội dung chưa commit.
 - [`docs/architecture.md`](./docs/architecture.md): module lifecycle,
   project boundaries và quy ước mở rộng.
 - [`README.md`](./README.md): build/run/test quick start.
+
+## Working with AI
+
+- Người dùng làm việc trên VS Code và muốn AI hướng dẫn từng bước theo dạng
+  "tạo file X ở đường dẫn Y với nội dung Z".
+- Với file đã có, đưa nguyên văn file thay thế để dán, tránh vá từng đoạn nhỏ.
+- Chỉ làm trong phạm vi người dùng đã duyệt.

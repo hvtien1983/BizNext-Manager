@@ -1,6 +1,6 @@
 # BizNext Manager — Project Summary
 
-> **Kiểm kê mã nguồn ngày 2026-11-28.** Đây là mô tả implementation đang có
+> **Kiểm kê mã nguồn ngày 2026-11-28 10:09.** Đây là mô tả implementation đang có
 > trong repo, không phải thiết kế đích. Các mục “planned/deferred” được tách
 > khỏi phần đã triển khai. Bỏ qua `bin/`, `obj/` và file build sinh tự động.
 
@@ -8,8 +8,7 @@
 
 BizNext Manager là ứng dụng Windows WPF, các project giao diện nhắm
 `net10.0-windows`; `ScanCore` nhắm `net10.0`. `BizNext.Shell` là executable
-host Dashboard và các module. Hiện QuickScan là module có nghiệp vụ thực tế;
-Notes và Weather/Calendar mới là module placeholder. Chưa có widget, tài khoản,
+host Dashboard và các module. Hiện QuickScan là module có nghiệp vụ hoàn chỉnh; Notes đã có giai đoạn 1 (ghi chú, notebook, tìm kiếm, ghim, tự lưu; xem mục 6A); Weather/Calendar mới là module placeholder. Chưa có widget, tài khoản,
 đồng bộ cloud, plugin loader hay Generic Host.
 
 Kiến trúc hiện tại là modular host với composition root dùng
@@ -77,7 +76,22 @@ src/
 │   ├── Settings/ShellSettingsStore.cs
 │   └── Storage/JsonFileStorage.cs
 ├── BizNext.Modules.Notes/
-│   └── NotesModule.cs
+│   ├── NotesModule.cs
+│   ├── NotesView.xaml(.cs)
+│   ├── Commands/
+│   │   └── RelayCommand.cs
+│   ├── Models/
+│   │   ├── Note.cs
+│   │   ├── Notebook.cs
+│   │   └── NotesData.cs
+│   ├── Services/
+│   │   ├── INoteRepository.cs
+│   │   └── JsonNoteRepository.cs
+│   └── ViewModels/
+│       ├── ObservableObject.cs
+│       ├── NoteViewModel.cs
+│       ├── NotebookItemViewModel.cs
+│       └── NotesViewModel.cs
 ├── BizNext.Modules.QuickScan/
 │   ├── AppSettingsWindow.xaml(.cs)
 │   ├── CreatePdfFolderWindow.xaml(.cs)
@@ -187,7 +201,7 @@ thống kê cấu trúc, không bao gồm output build và không phải API c�
 | `BizNext.DesignSystem` | `net10.0-windows` | Resource dictionaries, style, component WPF |
 | `BizNext.Infrastructure` | `net10.0-windows` | Tham chiếu Contracts; catalog, settings, JSON storage |
 | `BizNext.Modules.QuickScan` | `net10.0-windows` | Tham chiếu Contracts, DesignSystem, Infrastructure, ScanCore, ScanDevice; `PDFtoImage` 5.4.0 |
-| `BizNext.Modules.Notes` | `net10.0-windows` | Tham chiếu Contracts và DesignSystem |
+| `BizNext.Modules.Notes`           | `net10.0-windows`         | Tham chiếu Contracts, DesignSystem và Infrastructure (dùng `JsonFileStorage`)                |
 | `BizNext.Modules.WeatherCalendar` | `net10.0-windows` | Tham chiếu Contracts và DesignSystem |
 | `BizNext.Shell` | `net10.0-windows`, WinExe | Tham chiếu UI/modules và Infrastructure; `Microsoft.Extensions.DependencyInjection` 10.0.0 |
 | `ScanCore` | `net10.0` | PDF và metadata tài liệu |
@@ -279,6 +293,7 @@ hoặc data-driven dashboard.
 - Scanner profiles: `%LocalAppData%\QuickScanManager\scanner-config.json`;
   QuickScan fake mode dùng `scanner-config.fake.json`.
 - Scan images tạm: `%LocalAppData%\QuickScanManager\scans`.
+- Notes: `%LocalAppData%\BizNext-Manager\Notes\notes.json` (một file JSON chứa notebook và ghi chú; ghi nguyên tử qua `JsonFileStorage`, định dạng indent, tên thuộc tính PascalCase). Đường dẫn mặc định do `NotesModule` đặt; `NotesModule` có constructor nhận đường dẫn tùy ý để test hoặc preview dùng thư mục riêng.
 - Metadata thư viện: `%LocalAppData%\QuickScanManager\storage\library.json`.
 - PDF mặc định trong thư viện: `%LocalAppData%\QuickScanManager\storage\pdfs`;
   người dùng có thể chọn thư mục PDF khác trong QuickScan settings.
@@ -436,6 +451,62 @@ Dialogs lấy owner từ cửa sổ host. Window WPF mới phải dùng applicat
 `Assets/icon.ico` và bảo đảm asset có trong project; Shell và QuickScan có
 assets tương ứng.
 
+## 6A. Notes: models, services, ViewModel và giao diện
+
+Trạng thái: giai đoạn 1 đã được viết trong code (ghi chú, notebook, tìm kiếm, ghim, xóa mềm, tự lưu). Các mục "planned/deferred" nằm ở cuối mục này.
+
+### Models
+
+- `Note`: `Id` (Guid), `Title`, `Content` (Markdown), `NotebookId` (Guid?), `Tags` (`List<string>`, chưa có UI), `IsPinned`, `CreatedAtUtc`, `UpdatedAtUtc`, `DeletedAtUtc` (Guid? xóa mềm), `IsDeleted` (`[JsonIgnore]`).
+- `Notebook`: `Id`, `Name`, `SortOrder`, `DeletedAtUtc` (xóa mềm), `IsDeleted` (`[JsonIgnore]`).
+- `NotesData`: `Version` (=1), `Notebooks`, `Notes`; là toàn bộ nội dung `notes.json`.
+
+### Services và lưu trữ
+
+- `INoteRepository`: `LoadAsync`, `SaveAsync` (nạp và lưu toàn bộ `NotesData`).
+- `JsonNoteRepository(JsonFileStorage storage, string filePath)`: file chưa có thì trả `NotesData` rỗng; file hỏng thì ném lỗi từ `JsonFileStorage`.
+- Chỉ có một implementation JSON. Khi làm đồng bộ cloud (gói Pro) dự kiến bổ sung phương thức theo từng note hoặc đổi sang SQLite; vì vậy mô hình dùng Guid, thời gian UTC và xóa mềm.
+
+### Commands và ViewModel
+
+- `RelayCommand` riêng trong `BizNext.Modules.Notes.Commands` (cùng hành vi với bản của QuickScan, chưa có `AsyncRelayCommand`); Notes không tham chiếu QuickScan. Có thể gom về một nơi dùng chung sau.
+- `ObservableObject`: `SetProperty`, `OnPropertyChanged`.
+- `NoteViewModel` (bọc `Note`): `Title`, `Content`, `IsPinned`, `NotebookKey` (Guid.Empty = chưa phân loại), `UpdatedAtUtc`, `UpdatedAtDisplay`, `DisplayTitle`, `Preview` (dòng đầu có chữ, tối đa 80 ký tự), sự kiện `Changed`, `NotifyNotebookChanged()`. Mỗi lần sửa cập nhật `UpdatedAtUtc`.
+- `NotebookItemViewModel` + `NotebookItemKind` (`All`, `Unassigned`, `Notebook`): một dòng trong danh sách notebook; có `Kind`, `Model`, `IsNotebook`, `Key`, `Name` (ghi ngược vào `Notebook.Name`), `NoteCount`.
+- `NotesViewModel`: state `Notes`, `VisibleNotes` (ICollectionView: lọc theo notebook + tìm kiếm trong tiêu đề/nội dung; sắp xếp ghim trước, sửa gần nhất trước), `NotebookFilters` (Tất cả, Chưa phân loại, các notebook), `NotebookOptions` (cho ComboBox của ghi chú), `SelectedNote`, `SelectedNotebookFilter`, `SearchText`, `StatusMessage`, `IsEditingNotebook`, `NotebookEditName`, `NotebookEditLabel`, `IsNotebookSelected`, `HasSelection`.
+- Commands: `NewNoteCommand`, `DeleteNoteCommand`, `TogglePinCommand`, `NewNotebookCommand`, `RenameNotebookCommand`, `DeleteNotebookCommand`, `ConfirmNotebookEditCommand`, `CancelNotebookEditCommand`. API: `LoadAsync`, `FlushAsync`.
+- Quy tắc nghiệp vụ:
+  - Tự lưu sau 1,5 giây kể từ lần sửa cuối (`DispatcherTimer`); ghi qua `SemaphoreSlim` để không ghi chồng.
+  - Nếu `LoadAsync` lỗi thì cờ `_isLoaded=false` và không lưu, để không ghi đè dữ liệu cũ bằng dữ liệu rỗng.
+  - Xóa ghi chú là xóa mềm (`DeletedAtUtc`), ghi chú biến mất khỏi danh sách nhưng còn trong file.
+  - Xóa notebook (phương án A): notebook được xóa mềm, mọi ghi chú thuộc notebook đó (kể cả ghi chú đã ở thùng rác) chuyển về chưa phân loại, không bị xóa.
+  - Ghi chú mới kế thừa notebook đang chọn.
+  - Tên notebook: không rỗng, không trùng (không phân biệt hoa thường) trong các notebook còn hoạt động; tên được cắt khoảng trắng hai đầu.
+  - Khi nạp, ghi chú trỏ tới notebook không tồn tại hoặc đã xóa được đưa về chưa phân loại.
+  - Số lượng ghi chú mỗi notebook (`NoteCount`) chỉ đếm ghi chú chưa xóa.
+
+### Giao diện
+
+- `NotesView.xaml` (UserControl) bố cục 3 cột (220 | 300 | còn lại): (1) Notebook: nút `+ Notebook`, ô nhập tên tại chỗ khi tạo mới/đổi tên (Enter = lưu, Esc = hủy), danh sách có số lượng, nút Đổi tên/Xóa; (2) nút `+ Ghi chú mới`, tìm kiếm, danh sách ghi chú (biểu tượng ghim, xem trước, giờ sửa); (3) soạn thảo: nút ghim/xóa, ComboBox chọn notebook, ô tiêu đề, ô nội dung nhiều dòng (Markdown thuần, chưa có xem trước), thanh trạng thái.
+- `NotesView.xaml.cs`: nạp dữ liệu một lần ở lần `Loaded` đầu; `FlushAsync` khi `Unloaded`; xác nhận bằng `MessageBox` khi xóa ghi chú và khi xóa notebook (nêu số ghi chú sẽ chuyển về chưa phân loại); đưa con trỏ vào `NotebookEditBox` khi ô nhập hiện ra.
+- Style dùng từ DesignSystem: `SectionCard`, `FieldLabel`, `InputTextBox`, `PrimaryButton`, `SecondaryButton`, `Fluent.ListBox`, `Fluent.ListBox.Item`, `Fluent.ComboBox`.
+- `NotesModule`: ID `biznext.module.notes` không đổi; có hai constructor (mặc định dùng đường dẫn LocalAppData ở mục 5; một constructor nhận đường dẫn). `CreateView()` tạo `JsonNoteRepository`, `NotesViewModel` và `NotesView`. Dịch vụ Notes chưa đăng ký trong DI của Shell; chúng được tạo bên trong `CreateView()`.
+
+### Planned / deferred (chưa triển khai)
+
+- Thùng rác: xem, khôi phục, xóa hẳn ghi chú và notebook (hiện mới có dữ liệu xóa mềm, chưa có UI).
+- Tag (có sẵn trường dữ liệu), xem trước Markdown, checklist, ảnh đính kèm, liên kết giữa các ghi chú.
+- Widget Dashboard (ghi chú ghim, ghi nhanh), khóa theo gói, đồng bộ cloud.
+- Lưu khi đóng cửa sổ chính hoặc thoát app (hiện chỉ có tự lưu 1,5 giây và lưu khi `Unloaded`; tắt app trong vòng 1,5 giây sau lần gõ cuối có thể mất ký tự cuối).
+- Test riêng cho Notes; sắp xếp thứ tự notebook; thông báo trạng thái khi xóa notebook.
+
+### Điểm cần xác minh (xóa mục này sau khi kiểm tra)
+
+- Build Release, `dotnet test` và checklist thử tay Notes (tạo/xóa/đổi tên notebook, đổi notebook của ghi chú, tắt/mở lại app).
+- Cách `ShellComposition` khởi tạo `NotesModule` (có hai constructor).
+- Hiển thị của `Fluent.ComboBox` với `DisplayMemberPath="Name"`; sau khi đổi tên notebook, ô ComboBox của ghi chú đang mở có thể hiện tên cũ.
+- Độ rộng 3 cột trên cửa sổ nhỏ.
+
 ## 7. BizNext.DesignSystem và giao diện
 
 ### Nguồn resource đang hoạt động
@@ -510,8 +581,7 @@ Các view dùng `DynamicResource` cho brush theo theme; module compose view và
 consume shared components/styles, không tạo thư viện UI riêng. Shell Dashboard
 có sidebar điều hướng, header nội dung, Dashboard cards và cài đặt theme.
 Dashboard settings có ba lựa chọn Sáng/Tối/Theo Windows. QuickScan có tabs,
-DataGrid, scanner controls, page list và dialogs. Notes/Weather views hiện
-chỉ là các card placeholder.
+DataGrid, scanner controls, page list và dialogs. Weather/Calendar view hiện chỉ là card placeholder; Notes có giao diện 3 cột thật (mục 6A).
 
 Các control names có ý nghĩa khi kiểm thử/automation:
 
@@ -529,6 +599,7 @@ Các control names có ý nghĩa khi kiểm thử/automation:
   `DefaultScannerComboBox`, `ScannerHelpText`, `AppendTimestampCheckBox`,
   `FolderNameTextBox`, `FileNameTextBox`, `DeviceNameText`, `AliasTextBox`,
   `ColorModeComboBox`, `ResolutionComboBox`, `SourceComboBox`.
+- Notes: `NotebookEditBox`.
 - TestHost: `ComponentList`, `ComponentTitle`, `ComponentDescription`,
   `PreviewContent`.
 
@@ -544,7 +615,8 @@ Các control names có ý nghĩa khi kiểm thử/automation:
   temporary directory, browser ghép file với metadata, metadata corrupt vẫn
   hiển thị file kèm warning, QuickScan settings round-trip giữ thư mục user set.
 - `WpfCompositionTests` (2): icon resource của Shell; khởi tạo module views,
-  shared resources/theme trên STA thread.
+  shared resources/theme trên STA thread.; kiểm tra tên kiểu view Notes là NotesView(đã đổi từ khi thay view placeholder).
+- Notes chưa có test riêng; số test vẫn là 14.
 
 `TemporaryDirectory` hỗ trợ test storage cô lập. Test scanner dùng
 `FakeScannerService`; test không gọi thiết bị WIA thật. WPF QuickScan view test
@@ -565,6 +637,8 @@ Người dùng xác nhận toàn bộ 15 mục smoke checklist đạt ngày 2026
 lượt sau 1A. Đây là kết quả người dùng báo trong môi trường thử; không phải
 kết quả tự động do tài liệu này xác minh. Xem
 [docs/smoke-test.md](./docs/smoke-test.md).
+
+View Notes trong TestHost dùng NotesModule; cần xác nhận TestHost không tạo NotesModule với đường dẫn mặc định (sẽ đọc/ghi notes.json thật) mà dùng thư mục tạm.
 
 **Cảnh báo dữ liệu:** `QUICKSCAN_USE_FAKE_SCANNER=1` chỉ thay scanner và một
 số settings/config file. Nó không tự cô lập PDF directory, `storage/library.json`
@@ -614,6 +688,7 @@ xác minh đường dẫn settings/library/PDF.
   summary. Chỉ thực hiện theo phạm vi đã được người dùng duyệt; xem
   [PROJECT_CONTEXT.md](./PROJECT_CONTEXT.md) và
   [PROJECT_TAICAUTRUC.md](./PROJECT_TAICAUTRUC.md).
+- Notes giai đoạn 1 (mục 6A) được thêm trong nhánh `feature/notes` (tạo từ `refactor/three-tier`), chưa commit tại thời điểm viết. Ngoài module Notes chỉ sửa một test (`WpfCompositionTests`) và thêm tham chiếu Infrastructure vào `BizNext.Modules.Notes.csproj`; Shell, module contract và đường dẫn dữ liệu của QuickScan giữ nguyên. Phạm vi Notes do người dùng duyệt trực tiếp trong quá trình làm việc, không thuộc các bước phương án B trong `PROJECT_TAICAUTRUC.md`.
 
 ## 11. Tài liệu liên quan
 

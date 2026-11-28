@@ -1,59 +1,42 @@
+using System.IO;
 using System.Windows;
-using System.Windows.Controls;
 using BizNext.Contracts;
 using BizNext.Contracts.Models;
+using BizNext.Infrastructure.Storage;
+using BizNext.Modules.Notes.Services;
+using BizNext.Modules.Notes.ViewModels;
 
 namespace BizNext.Modules.Notes;
 
 public sealed class NotesModule : IBizNextModule
 {
+    private readonly string _dataFilePath;
+
+    public NotesModule() : this(GetDefaultDataFilePath())
+    {
+    }
+
+    public NotesModule(string dataFilePath)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(dataFilePath);
+        _dataFilePath = dataFilePath;
+    }
+
     public BizNextModuleMetadata Metadata { get; } = new(
         "biznext.module.notes",
         "Ghi chú",
         "Ghi lại ý tưởng và công việc cần nhớ.",
         "Năng suất");
 
-    public FrameworkElement CreateView() => new NotesModuleView();
-}
-
-internal sealed class NotesModuleView : UserControl
-{
-    public NotesModuleView()
+    public FrameworkElement CreateView()
     {
-        SetResourceReference(BackgroundProperty, "SurfaceCanvasBrush");
-
-        var title = new TextBlock
-        {
-            Text = "Ghi chú",
-            FontSize = 24,
-            FontWeight = FontWeights.Bold
-        };
-        title.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
-
-        var description = new TextBlock
-        {
-            Text = "Tiện ích ghi chú sẽ được bổ sung trong giai đoạn tiếp theo.",
-            Margin = new Thickness(0, 8, 0, 0),
-            FontSize = 14,
-            TextWrapping = TextWrapping.Wrap
-        };
-        description.SetResourceReference(TextBlock.ForegroundProperty, "TextMutedBrush");
-
-        var card = new Border
-        {
-            Margin = new Thickness(24),
-            Padding = new Thickness(28),
-            Child = new StackPanel
-            {
-                VerticalAlignment = VerticalAlignment.Center,
-                Children =
-                {
-                    title,
-                    description
-                }
-            }
-        };
-        card.SetResourceReference(StyleProperty, "SectionCard");
-        Content = card;
+        var repository = new JsonNoteRepository(new JsonFileStorage(), _dataFilePath);
+        return new NotesView(new NotesViewModel(repository));
     }
+
+    private static string GetDefaultDataFilePath() => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "BizNext-Manager",
+        "Notes",
+        "notes.json");
 }

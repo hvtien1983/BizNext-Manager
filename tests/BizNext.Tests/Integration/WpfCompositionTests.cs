@@ -86,7 +86,7 @@ public sealed class WpfCompositionTests
                 Assert.NotNull(quickScan.DataContext);
                 Assert.IsType<TabControl>(quickScan.FindName("MainTabControl"));
                 navigation.SelectModule("biznext.module.notes");
-                Assert.Equal("NotesModuleView",
+                Assert.Equal("NotesView",
                     Assert.IsAssignableFrom<UserControl>(
                         Assert.IsType<ContentControl>(shell.FindName("ContentHost")).Content).GetType().Name);
                 navigation.SelectModule("biznext.module.quickscan");
@@ -104,7 +104,7 @@ public sealed class WpfCompositionTests
                 ThemeManager.SetTheme(AppTheme.Light);
                 settingsDialog.Close();
                 shell.Close();
-                Assert.Equal("NotesModuleView", Assert.IsAssignableFrom<UserControl>(modules[1].CreateView()).GetType().Name);
+                Assert.Equal("NotesView", Assert.IsAssignableFrom<UserControl>(modules[1].CreateView()).GetType().Name);
                 Assert.Equal("WeatherCalendarModuleView", Assert.IsAssignableFrom<UserControl>(modules[2].CreateView()).GetType().Name);
                 Assert.Equal("biznext.module.quickscan", modules[0].Metadata.Id);
                 var host = new BizNext.TestHost.MainWindow();
